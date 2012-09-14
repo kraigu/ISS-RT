@@ -21,3 +21,8 @@ For example:
 	username=freddie
 	password=flintstone
 	hostname=rt.yourorg.ca
+
+License
+-------
+
+BSD-new.

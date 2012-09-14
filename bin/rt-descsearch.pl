@@ -6,6 +6,8 @@ use warnings;
 # Mike Patterson <mike.patterson@uwaterloo.ca>
 # in his guise as IST-ISS staff member, August 2012
 
+# Currently n/s
+
 use Data::Dumper;
 use Config::General;
 use RT::Client::REST;
