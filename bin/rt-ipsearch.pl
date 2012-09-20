@@ -8,34 +8,21 @@ use warnings;
 # in his guise as IST-ISS staff member, Feb 2012
 # added Investigations May 2012
 
+BEGIN { unshift @INC, '../lib'; }
+
 use Data::Dumper;
 use Config::General;
 use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
+use ConConn;
 
-my $debug = 0; # 3 or greater prints passwords, watch out
-
-my $configfile = qq|$ENV{"HOME"}/.rtrc|;
+my $debug = 0;
 
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies);
 
-if( ! -e $configfile){ 
-        die "\n$configfile does not exist\n";
-}
-my $perms = sprintf("%o",(stat($configfile))[2] & 07777);
-if($debug > 3){ print "Permissions on rc file: " . Dumper($perms); }
-die "\nConfig file must not have any more than owner rw\n"
-        unless ($perms == '600' || $perms == '0400');
-
-my $conf = new Config::General($configfile);
-my %config = $conf->getall;
-if($debug > 3){ print Dumper(\%config); }
-
-die "\nNo password!\n" unless $config{password};
-die "\nNo hostname!\n" unless $config{hostname};
-die "\nNo username!\n" unless $config{username};
+my %config = ISSRT::ConConn::GetConfig();
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},

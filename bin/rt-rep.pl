@@ -6,38 +6,24 @@
 # Mike Patterson <mike.patterson@uwaterloo.ca>
 # in his guise as IST-ISS staff member, Feb, Jul 2012
 
-
 use strict;
 use warnings;
+
+BEGIN { unshift @INC, '../lib'; }
 
 use Data::Dumper;
 use Config::General;
 use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
+use ConConn;
 
 my $debug = 0;
-
-my $configfile = qq|$ENV{"HOME"}/.rtrc|;
 
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies);
 
-if( ! -e $configfile){ 
-        die "\n$configfile does not exist\n";
-}
-my $perms = sprintf("%o",(stat($configfile))[2] & 07777);
-if($debug > 1){ print Dumper($perms); }
-die "\nConfig file must not have any more than owner rw\n"
-        unless ($perms == '600' || $perms == '0400');
-
-my $conf = new Config::General($configfile);
-my %config = $conf->getall;
-if($debug > 1){ print Dumper(\%config); }
-
-die "\nNo password!\n" unless $config{password};
-die "\nNo hostname!\n" unless $config{hostname};
-die "\nNo username!\n" unless $config{username};
+my %config = ISSRT::ConConn::GetConfig();
 
 # default to the previous month's issues. Sort of.
 my $lm = $ARGV[0] || UnixDate("-1m -1d","%Y-%m-%d");
