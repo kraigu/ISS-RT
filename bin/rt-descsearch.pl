@@ -8,6 +8,9 @@ use warnings;
 
 # Currently n/s
 
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+
 use Data::Dumper;
 use Config::General;
 use RT::Client::REST;

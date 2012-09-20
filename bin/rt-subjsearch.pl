@@ -6,7 +6,8 @@ use warnings;
 # Mike Patterson <mike.patterson@uwaterloo.ca>
 # in his guise as IST-ISS staff member, April 2012
 
-BEGIN { unshift @INC, '../lib'; }
+use FindBin;
+use lib "$FindBin::Bin/../lib";
 
 use Data::Dumper;
 use Config::General;

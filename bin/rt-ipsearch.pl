@@ -8,7 +8,8 @@ use warnings;
 # in his guise as IST-ISS staff member, Feb 2012
 # added Investigations May 2012
 
-BEGIN { unshift @INC, '../lib'; }
+use FindBin;
+use lib "$FindBin::Bin/../lib";
 
 use Data::Dumper;
 use Config::General;
