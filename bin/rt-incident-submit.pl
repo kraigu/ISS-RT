@@ -16,6 +16,8 @@ use ConConn;
 
 my $debug = 0;
 
+my %config = ISSRT::ConConn::GetConfig();
+
 my $subject = $ARGV[0] || die "Need a subject\n";
 my $infilename = $ARGV[1] || die "Need a file name\n";
 $/ = undef; # we're going to want to read a whole file into a string
