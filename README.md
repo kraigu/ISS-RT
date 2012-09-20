@@ -18,9 +18,15 @@ Requirements
 You need a .rtrc file in your home directory, containing your credentials.
 For example:
 
-	username=freddie
-	password=flintstone
-	hostname=rt.yourorg.ca
+	username freddie
+	password flintstone
+	hostname rt.yourorg.ca
+
+You can use any format that Config::General understands, but this is a format that's shared with the venerable rt.pl script.
+
+This file must be mode 0400 or 0600, else the config file parser will bomb out. This is afeaturenotabug.
+
+I do not intend to support the use of environment variables to set the RT credentials, as per rt.pl. I believe this is dangerous.
 
 License
 -------
