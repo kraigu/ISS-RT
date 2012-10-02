@@ -7,6 +7,7 @@ use warnings;
 # Mike Patterson <mike.patterson@uwaterloo.ca>
 # in his guise as IST-ISS staff member, Feb 2012
 # added Investigations May 2012
+# more complete output (dates) Oct 2012
 
 use FindBin;
 use lib "$FindBin::Bin/../lib";
@@ -52,17 +53,21 @@ my @ids = $rt->search(
 if($debug > 0){	print scalar @ids . " incidents\n"; }
 if($debug > 1){	print Dumper(@ids); }
 
-# Going to want: id, Subject, RTIR_IP, RTIR_State, Classification
 for my $id (@ids) {
 	# show() returns a hash reference
 	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
 	if($debug > 0) {
 		print Dumper($ticket);
 	}
-	my $class = $ticket->{'CF.{_RTIR_Classification}'} || '';
+	my $class = $ticket->{'CF.{_RTIR_Classification}'} || 'none';
 	my $ipl = $ticket->{'CF.{_RTIR_IP}'};
 	my $subj = $ticket->{'Subject'};
 	my $state = $ticket->{'CF.{_RTIR_State}'};
 	my $queue = $ticket->{'Queue'};
-	print "$queue ID: $id ($state)\n$subj\nClassification: $class\nIP List:\n$ipl\n\n";
+	my $cdate = $ticket->{'Created'};
+	my $rdate = $ticket->{'Resolved'} || '';
+	my $rreason = $ticket->{'CF.{_RTIR_Resolution}'} || '';
+	print "$queue ID: $id ($state)\nCreated: $cdate\n$subj\nClassification: $class";
+	if($rdate){ print "\nResolved: $rreason\t$rdate"; }
+	print "\nIP List:\n$ipl\n\n";
 }
