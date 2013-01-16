@@ -68,7 +68,8 @@ for my $id (@ids) {
 	my $conskey = $ticket->{'CF.{_RTIR_Constituency}'};
 	$constituencies{$conskey} ||= 0;
 	$constituencies{$conskey} += 1;
-	print "$id\t$conskey\t$ticket->{'Subject'}\n";
+	my $pwned = $ticket->{'CF.{Userid}'} || 'Unset';
+	print "$id\t$pwned\t$conskey\t$ticket->{'Subject'}\n";
 	if($debug > 2){
 		print Dumper($ticket);
 	}
