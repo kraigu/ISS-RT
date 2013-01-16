@@ -70,7 +70,7 @@ for my $id (@ids) {
 	$constituencies{$conskey} ||= 0;
 	$constituencies{$conskey} += 1;
 	if($debug > 1){
-		print "$id\t$conskey\t$ticket->{'Subject'}\n"
+		print "$id\t$conskey\t$ticket->{'Subject'}\n";
 	}
 	if($debug > 2){
 		print Dumper($ticket);
