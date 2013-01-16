@@ -8,6 +8,8 @@ use lib "$FindBin::Bin/../lib";
 # Look for Investigations that have gone past their due date
 # Mike Patterson <mike.patterson@uwaterloo.ca>
 # in his guise as IST-ISS staff member, 20 September 2012
+# also look for Incidents which lack an Investigation
+# blame same, 12 October 2012
 
 use Data::Dumper;
 use RT::Client::REST;
@@ -48,6 +50,8 @@ my @ids = $rt->search(
 if($debug > 0){	print scalar @ids . " investigations\n"; }
 if($debug > 1){	print Dumper(@ids); }
 
+print "Overdue Investigations\n";
+
 for my $id (@ids) {
 	# show() returns a hash reference
 	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
@@ -58,4 +62,18 @@ for my $id (@ids) {
 	my $ddate = $ticket->{'Due'};
 	my $owner = $ticket->{'Owner'};
 	print "$id\t$owner\t$ddate\t$subj\n";
+}
+
+$qstring = qq|
+Queue = 'Incidents'
+AND CF.{_RTIR_State} = 'open'
+|;
+
+for my $id (@ids) {
+	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
+	if($debug > 0) {
+		print Dumper($ticket);
+	}
+	my $subj = $ticket->{'Subject'};
+	my $owner = $ticket->{'Owner'};
 }
