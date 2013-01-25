@@ -46,9 +46,11 @@ Queue = 'Incidents'
 AND Created > '$lm'
 AND Created < '$nm'
 AND CF.{_RTIR_Classification} != 'Question Only'
-AND CF.{_RTIR_Classification} != 'LE request'
 AND CF.{_RTIR_Resolution} != 'abandoned'
+AND CF.{_RTIR_Status} != 'rejected'
 |;
+# AND CF.{_RTIR_Classification} != 'LE request'
+
 if($debug > 0){ print "Query string\n$qstring\n"; }
 
 my @ids = $rt->search(
