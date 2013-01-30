@@ -18,15 +18,38 @@ use Date::Manip;
 use ConConn;
 use XML::XPath;
 use Socket;
+use Net::IPv4Addr qw( :all ); # yeah, both this and Socket for gethostbyaddr.
 
 my $debug = 0;
 
 my %config = ISSRT::ConConn::GetConfig();
 
+# Set up Waterloo-specific subnets.
+# This should go into a configuration file.
+my @wirelessnets = ( "129.97.124.0/25","129.97.125.0/25" );
+my @resnets = ("129.97.224.0/20","129.97.240.0/21","129.97.248.0/22",
+	"129.97.252.0/22","129.97.124.128/25","129.97.125.128/25");
+
 sub resolve() {
 	my $inip = shift;
 	my $foo = inet_aton($inip);
 	return gethostbyaddr($foo,AF_INET) || "Unknown Hostname";
+}
+
+sub find_c() {
+	my $inip = shift;
+	if($debug > 0){ print ("find_c inip was $inip\n"); }
+	foreach my $net (@wirelessnets){
+		if( ipv4_in_network($net,$inip) ){
+			return "Academic-Support";
+		}
+	}
+	foreach my $net (@resnets){
+		if( ipv4_in_network($net,$inip) ){
+			return "ResNet";
+		}
+	}
+	return "unclassified";
 }
 
 my $inXML = 0;
@@ -44,7 +67,7 @@ while(<>){
 	}
 }
 
-my ($ch,$ts,$cid,$ip,$dname,$title,$ft,$dv,$fn) = "";
+my ($ch,$ts,$cid,$ip,$dname,$title,$ft,$dv,$fn,$constit) = "";
 
 if($xmlString) {
 	$xmlString =~ s/(\s)&(\s)/$1&amp;$2/;
@@ -61,6 +84,7 @@ if($xmlString) {
 	$ft = $xp->findvalue("/Infringement/Content/Item/Type") || "Unknown Type";
 	$dv = $xp->findvalue("/Infringement/Source/Deja_Vu") || "DejaVu unset";
 	$ts =~ s/T.*//;
+	$constit = &find_c($ip);
 } else {
 	die "DERP HERP\n";
 }
@@ -80,11 +104,12 @@ DejaVu $dv
 
 if($debug > 0){
 	print qq|
-	Subject: $subject
+Subject: $subject
+Constituency: $constit
 
-	RT Text:
-	$rttext
-	|;
+RT Text:
+$rttext
+|;
 }
 
 my $rt = RT::Client::REST->new(
@@ -105,8 +130,10 @@ my $ticket = RT::Client::REST::Ticket->new(
 	subject => $subject,
 	cf => {
 		'Risk Severity' => 2,
-		'_RTIR_Classification' => "Copyright"
+		'_RTIR_Classification' => "Copyright",
+		'_RTIR_Constituency' => $constit
 	},
 )->store(text => $rttext);
 print "New ticket's ID is ", $ticket->id, "\n";
+# Submitted open. Shoot me now.
 
