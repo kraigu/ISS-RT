@@ -21,10 +21,10 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_c $opt_l $opt_C $opt_L $opt_v $opt_d/;
+use vars qw/ $opt_s $opt_e $opt_c $opt_l $opt_C $opt_L $opt_v $opt_d $opt_h/;
 use Getopt::Std;
 
-getopts('s:e:clCLvd');
+getopts('s:e:clCLvdh');
 my $start_run = time();
 my $debug = 0;
 
@@ -33,14 +33,17 @@ my (%classifications,%constituencies);
 my($lm,$nm,$qstring);
 
 my %config = ISSRT::ConConn::GetConfig();
-
+if($opt_h){
+print "Available options: -s (start-date),  -e (end-date), -c (include Copyright), -l (include LE request), -C (Copyright only), -L (LE request only), -v (verbose report), -d (enable debugging)";
+print "\n";
+}
 #-s -e time options
 if($opt_s && $opt_e){
   $lm = $opt_s;
   $nm = $opt_e	
 }elsif ($opt_s && (!$opt_e)){
   $lm = $opt_s;
-  $nm = $opt_s;
+  $nm = UnixDate("today","%Y-%m-%d");
 }elsif((!$opt_s) && (!$opt_e)){
  $lm = UnixDate("-1m","%Y-%m-01");
  $nm = UnixDate("today","%Y-%m-01");
@@ -148,6 +151,24 @@ elsif((!$opt_l) && (!$opt_c) && (!$opt_L) && $opt_C){
   )
   AND CF.{_RTIR_Classification} = 'Copyright'
 |;
+}# -C -L
+elsif((!$opt_l) && (!$opt_c) && $opt_L && $opt_C){
+  $qstring = qq|
+  Queue = 'Incidents'
+  AND Created > '$lm'
+  AND Created < '$nm'
+  AND (
+ 	CF.{_RTIR_Resolution} != 'abandoned' 
+ 	OR
+	CF.{_RTIR_Classification} != 'Question Only'
+	OR
+	CF.{_RTIR_Status} != 'rejected'
+  )
+  AND (CF.{_RTIR_Classification} = 'LE request'
+       OR
+       CF.{_RTIR_Classification} = 'Copyright'
+       )     
+|;
 }
 
 
@@ -244,6 +265,20 @@ elsif((!$opt_l) && (!$opt_c) && (!$opt_L) && $opt_C){
   AND CF.{_RTIR_Resolution} != 'abandoned'
   AND CF.{_RTIR_Status} != 'rejected'
   AND CF.{_RTIR_Classification} = 'Copyright'
+|;
+}#-C -L
+elsif((!$opt_l) && (!$opt_c) && $opt_L && $opt_C){
+  $qstring = qq|
+  Queue = 'Incidents'
+  AND Created > '$lm'
+  AND Created < '$nm'
+  AND CF.{_RTIR_Classification} != 'Question Only'
+  AND CF.{_RTIR_Resolution} != 'abandoned'
+  AND CF.{_RTIR_Status} != 'rejected'
+  AND (CF.{_RTIR_Classification} = 'LE request'
+       OR
+       CF.{_RTIR_Classification} = 'Copyright'
+       )     
 |;
 }
 
