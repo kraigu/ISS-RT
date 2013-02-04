@@ -33,10 +33,7 @@ my (%classifications,%constituencies);
 my($lm,$nm,$qstring);
 
 my %config = ISSRT::ConConn::GetConfig();
-if($opt_h){
-print "Available options: -s (start-date),  -e (end-date), -c (include Copyright), -l (include LE request), -C (Copyright only), -L (LE request only), -v (verbose report), -d (enable debugging)";
-print "\n";
-}
+
 #-s -e time options
 if($opt_s && $opt_e){
   $lm = $opt_s;
@@ -60,8 +57,12 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
+if($opt_h){
+print "Available options: -s (start-date),  -e (end-date), -c (include Copyright), -l (include LE request), -C (Copyright only), -L (LE request only), -v (verbose report), -d (enable debugging)";
+print "\n";
+}
 #-v CSV output from weeklyrep.pl
-if($opt_v){
+elsif($opt_v){
   if($opt_l && (!$opt_c) && (!$opt_L) && (!$opt_C)){
   $qstring = qq|
   Queue = 'Incidents'
