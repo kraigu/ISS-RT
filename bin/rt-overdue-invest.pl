@@ -34,9 +34,7 @@ try {
 };
 
 my $tday = UnixDate("today","%Y-%m-%d");
-
 my($lm,$nm,$qstring);
-
 
 #-s -e time options
 if($opt_s && $opt_e){
