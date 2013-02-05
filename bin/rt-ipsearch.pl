@@ -33,6 +33,7 @@ if($opt_f){
 } else {
 	%config = ISSRT::ConConn::GetConfig();
 }
+
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
 	timeout => 30,
