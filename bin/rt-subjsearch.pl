@@ -26,8 +26,9 @@ my ($ticket,$checkmonth);
 my (%classifications,%constituencies,%config);
 
 if($opt_f){
- %config = ISSRT::ConConn::GetConfig($opt_f);
-}else{die "Please enter a config file\n";
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
 }
 
 my $rt = RT::Client::REST->new(

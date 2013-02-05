@@ -19,11 +19,15 @@ use Getopt::Std;
 getopts('s:e:r:f:Ed');
 my $start_run = time();
 my $debug = 0;
-my $rt;
-if($opt_f){
-my %config = ISSRT::ConConn::GetConfig($opt_f);
+my %config;
 
- $rt = RT::Client::REST->new(
+if($opt_f){
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
+}
+
+my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
 	timeout => 30,
 );
@@ -33,8 +37,7 @@ try {
 } catch Exception::Class::Base with {
 	die "problem logging in: ", shift->message;
 };
-}else{die "Please enter a config file\n";
-}
+
 my $tday = UnixDate("today","%Y-%m-%d");
 my($lm,$nm,$qstring);
 

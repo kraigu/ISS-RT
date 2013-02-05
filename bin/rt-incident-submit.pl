@@ -21,8 +21,9 @@ getopts('s:i:p:f:');
 my $debug = 0;
 my %config;
 if($opt_f){
- %config = ISSRT::ConConn::GetConfig($opt_f);
-}else{die "Please enter a config file\n";
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
 }
 my $subject = $opt_s || die "Need a subject\n";
 my $infilename = $opt_i || die "Need a file name\n";

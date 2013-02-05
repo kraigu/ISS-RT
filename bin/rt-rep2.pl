@@ -33,8 +33,9 @@ my (%classifications,%constituencies,%config);
 my($lm,$nm,$qstring);
 
 if($opt_f){
- %config = ISSRT::ConConn::GetConfig($opt_f);
-}else{die "Please enter a config file\n";
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
 }
 
 #-s -e time options

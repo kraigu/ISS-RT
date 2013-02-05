@@ -24,9 +24,7 @@ getopts('s:e:c:f:');
 
 
 my $debug = 0;
-my $rt;
-
-my ($ticket,$checkmonth);
+my ($ticket,$checkmonth,%config);
 my (%classifications,%constituencies);
 
 
@@ -37,8 +35,11 @@ my $nm = $opt_e || UnixDate("today","%Y-%m-01");
 my $const = $opt_c || "";
 
 if($opt_f){
-    my %config = ISSRT::ConConn::GetConfig($opt_f);
-   $rt = RT::Client::REST->new(
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
+}
+my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
 	timeout => 30,
 );
@@ -48,8 +49,7 @@ try {
 } catch Exception::Class::Base with {
 	die "problem logging in: ", shift->message;
 };
-}else{die "Please enter a config file\n";
-}
+
 my $qstring = qq|
 Queue = 'Incidents'
 AND Created > '$lm'

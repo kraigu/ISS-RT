@@ -23,14 +23,15 @@ use Getopt::Std;
 getopts('s:e:f:');
 
 my $debug = 0;
-my %config;
 my ($ticket,$checkmonth);
-my (%classifications,%constituencies);
+my (%classifications,%constituencies,%config);
 
 if($opt_f){
- %config = ISSRT::ConConn::GetConfig($opt_f);
-}else{die "Please enter a config file\n";
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
 }
+
 # default to the previous month's issues. Sort of.
 my $lm = $opt_s || UnixDate("-1m -1d","%Y-%m-%d");
 my $nm = $opt_e || UnixDate("today","%Y-%m-01");

@@ -25,12 +25,13 @@ use Getopt::Std;
 getopts('f:');
 
 my $debug = 0;
+my %config;
 
 if($opt_f){
-my %config = ISSRT::ConConn::GetConfig($opt_f);
-}else{die "Please enter a config file\n";
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
 }
-
 # Set up Waterloo-specific subnets.
 # This should go into a configuration file.
 my @wirelessnets = ( "129.97.124.0/25","129.97.125.0/25" );
