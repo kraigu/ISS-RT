@@ -11,7 +11,8 @@ use Data::Dumper;
 my $debug = 0;
 
 sub GetConfig{
-	my $configfile = qq|$ENV{"HOME"}/.rtrc|;
+	my $file = $_[0];
+	my $configfile = qq|$ENV{"HOME"}/$file|;
 	if( ! -e $configfile){ 
 		die "\n$configfile does not exist\n";
 	}
