@@ -13,10 +13,16 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/$opt_s $opt_f/;
+use Getopt::Std;
 
+getopts('s:f:');
+my %config;
 my $ticket;
-my %config = ISSRT::ConConn::GetConfig();
-
+if($opt_f){
+ %config = ISSRT::ConConn::GetConfig($opt_f);
+}else{die "Please enter a config file\n";
+}
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
 	timeout => 30,
@@ -27,13 +33,17 @@ try {
 } catch Exception::Class::Base with {
 	die "problem logging in: ", shift->message;
 };
-
-die "No search string given\n" unless $ARGV[0];
+my $t;
+if($opt_s){
+	 $t = $opt_s;
+}else{
+         die "No search string given\n";
+}
 
 try {
-	$ticket = $rt->show(type => 'ticket', id => $ARGV[0]);
+	$ticket = $rt->show(type => 'ticket', id => $t);
 } catch RT::Client::REST::UnauthorizedActionException with {
-    print "You are not authorized to view ticket $ARGV[0]\n";
+    print "You are not authorized to view ticket $t\n";
 } catch RT::Client::REST::Exception with {
 	print "DERP\n";
 };

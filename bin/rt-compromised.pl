@@ -17,20 +17,28 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/ $opt_s $opt_e $opt_c $opt_f/;
+use Getopt::Std;
+
+getopts('s:e:c:f:');
+
 
 my $debug = 0;
+my $rt;
 
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies);
 
-my %config = ISSRT::ConConn::GetConfig();
+
 
 # default to the previous month's issues. Sort of.
-my $lm = $ARGV[0] || UnixDate("-1m -1d","%Y-%m-%d");
-my $nm = $ARGV[1] || UnixDate("today","%Y-%m-01");
-my $const = $ARGV[2] || "";
+my $lm = $opt_s || UnixDate("-1m -1d","%Y-%m-%d");
+my $nm = $opt_e || UnixDate("today","%Y-%m-01");
+my $const = $opt_c || "";
 
-my $rt = RT::Client::REST->new(
+if($opt_f){
+    my %config = ISSRT::ConConn::GetConfig($opt_f);
+   $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
 	timeout => 30,
 );
@@ -40,7 +48,8 @@ try {
 } catch Exception::Class::Base with {
 	die "problem logging in: ", shift->message;
 };
-
+}else{die "Please enter a config file\n";
+}
 my $qstring = qq|
 Queue = 'Incidents'
 AND Created > '$lm'

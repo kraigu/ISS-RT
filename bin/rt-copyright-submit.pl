@@ -19,10 +19,17 @@ use ConConn;
 use XML::XPath;
 use Socket;
 use Net::IPv4Addr qw( :all ); # yeah, both this and Socket for gethostbyaddr.
+use vars qw/ $opt_f/;
+use Getopt::Std;
+
+getopts('f:');
 
 my $debug = 0;
 
-my %config = ISSRT::ConConn::GetConfig();
+if($opt_f){
+my %config = ISSRT::ConConn::GetConfig($opt_f);
+}else{die "Please enter a config file\n";
+}
 
 # Set up Waterloo-specific subnets.
 # This should go into a configuration file.

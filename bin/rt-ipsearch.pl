@@ -18,14 +18,20 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/ $opt_s $opt_f/;
+use Getopt::Std;
+
+getopts('s:f:');
 
 my $debug = 0;
-
+my %config;
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies);
 
-my %config = ISSRT::ConConn::GetConfig();
-
+if($opt_f){
+  %config = ISSRT::ConConn::GetConfig($opt_f);
+}else{die "Please enter a config file\n";
+}
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
 	timeout => 30,
@@ -37,7 +43,7 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-my $ipsearch = $ARGV[0] || die "No IP\n";
+my $ipsearch = $opt_s || die "No IP\n";
 
 my $qstring = qq|
 (Queue = 'Incidents' OR Queue = 'Investigations')

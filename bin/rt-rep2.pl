@@ -21,18 +21,21 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_c $opt_l $opt_C $opt_L $opt_v $opt_d $opt_h/;
+use vars qw/ $opt_s $opt_e $opt_c $opt_l $opt_C $opt_L $opt_v $opt_d $opt_h $opt_f/;
 use Getopt::Std;
 
-getopts('s:e:clCLvdh');
+getopts('s:e:f:clCLvdh');
 my $start_run = time();
 my $debug = 0;
 
 my ($ticket,$checkmonth);
-my (%classifications,%constituencies);
+my (%classifications,%constituencies,%config);
 my($lm,$nm,$qstring);
 
-my %config = ISSRT::ConConn::GetConfig();
+if($opt_f){
+ %config = ISSRT::ConConn::GetConfig($opt_f);
+}else{die "Please enter a config file\n";
+}
 
 #-s -e time options
 if($opt_s && $opt_e){

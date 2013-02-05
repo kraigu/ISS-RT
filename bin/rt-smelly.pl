@@ -16,10 +16,18 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/$opt_f/;
+use Getopt::Std;
+
+getopts('f:');
 
 my $debug = 0;
+my %config;
 
-my %config = ISSRT::ConConn::GetConfig();
+if($opt_f){
+ %config = ISSRT::ConConn::GetConfig($opt_f);
+}else{die "Please enter a config file\n";
+}
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},

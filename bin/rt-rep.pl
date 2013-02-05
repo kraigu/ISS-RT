@@ -18,17 +18,23 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/ $opt_s $opt_e $opt_f/;
+use Getopt::Std;
+
+getopts('s:e:f:');
 
 my $debug = 0;
 
 my ($ticket,$checkmonth);
-my (%classifications,%constituencies);
+my (%classifications,%constituencies,%config);
 
-my %config = ISSRT::ConConn::GetConfig();
-
+if($opt_f){
+ %config = ISSRT::ConConn::GetConfig($opt_f);
+}else{die "Please enter a config file\n";
+}
 # default to the previous month's issues. Sort of.
-my $lm = $ARGV[0] || UnixDate("-1m -1d","%Y-%m-%d");
-my $nm = $ARGV[1] || UnixDate("today","%Y-%m-01");
+my $lm = $opt_s || UnixDate("-1m -1d","%Y-%m-%d");
+my $nm = $opt_e || UnixDate("today","%Y-%m-01");
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},

@@ -14,15 +14,20 @@ use Error qw|:try|;
 use Date::Manip;
 use ConConn;
 use Scalar::Util qw(looks_like_number);
+use vars qw/ $opt_s $opt_i  $opt_p $opt_f/;
+use Getopt::Std;
 
+getopts('s:i:p:f:');
 my $debug = 0;
-
-my %config = ISSRT::ConConn::GetConfig();
-
-my $subject = $ARGV[0] || die "Need a subject\n";
-my $infilename = $ARGV[1] || die "Need a file name\n";
+my %config;
+if($opt_f){
+ %config = ISSRT::ConConn::GetConfig($opt_f);
+}else{die "Please enter a config file\n";
+}
+my $subject = $opt_s || die "Need a subject\n";
+my $infilename = $opt_i || die "Need a file name\n";
 my $pri;
-if($pri = $ARGV[2]){
+if($pri = $opt_p){
 	die "Priority must be a digit (1-5)\n" unless looks_like_number($pri);
 } else {
 	$pri = 3;
