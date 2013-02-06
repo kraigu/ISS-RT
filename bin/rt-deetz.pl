@@ -37,9 +37,9 @@ try {
 };
 my $t;
 if($opt_s){
-	 $t = $opt_s;
-}else{
-         die "No search string given\n";
+	$t = $opt_s;
+} else {
+	die "No search string given, specify an RT number with -s\n";
 }
 
 try {
