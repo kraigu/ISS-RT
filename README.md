@@ -14,6 +14,8 @@ Requirements
 	use RT::Client::REST;
 	use Error qw|:try|;
 	use Date::Manip;
+	use Net::IPv4Addr;
+	use XML::XPath;
 
 You need a .rtrc file in your home directory, containing your credentials.
 For example:
@@ -26,9 +28,15 @@ You can use any format that Config::General understands, but this is a format th
 
 This file must be mode 0400 or 0600, else the config file parser will bomb out. This is afeaturenotabug.
 
-I do not intend to support the use of environment variables to set the RT credentials, as per rt.pl. I believe this is dangerous.
+I do not intend to support the use of environment variables to set the RT credentials, as per rt.pl. I believe this is dangerous. However, all scripts support a -f option, the argument of which must be a path to a configuration file. The ownership and permissions are still checked on this file.
 
 License
 -------
 
 BSD-new.
+
+Authors
+-------
+
+Mike Patterson, Waterloo IST ISS <mike.patterson@uwaterloo.ca>
+Cheng Jie Shi, Winter 2013 IST ISS Co-Op <cjshi@uwaterloo.ca>
