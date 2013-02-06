@@ -15,12 +15,15 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_f/;
+use vars qw/ $opt_s $opt_f $opt_v/;
 use Getopt::Std;
 
-getopts('s:f:');
+getopts('s:f:v:');
 
-my $debug = 0;
+my $debug = $opt_v || 0;
+if($debug > 0){
+	print "Debug level is $debug\n";
+}
 
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies,%config);
@@ -42,7 +45,7 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-my $searchstr = $opt_s || die "No search string given\n";
+my $searchstr = $opt_s || die "No search string given - specify with -s\n";
 
 my $qstring = qq|
 Queue = 'Incidents'
