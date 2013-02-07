@@ -17,15 +17,18 @@ use RT::Client::REST::Ticket;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_f/;
+use vars qw/ $opt_s $opt_e $opt_f $opt_v $opt_h/;
 use Getopt::Std;
 
-getopts('s:e:f:');
+getopts('s:e:f:v:h');
 
-my $debug = 0;
+my $debug = $opt_v || 0;
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies,%config);
 
+if($opt_h){
+   print "Options: -s (start-date), -e (end-date), -f (config file), -v(debug)\n";
+}else{
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -85,4 +88,5 @@ for my $id (@ids) {
 		print Dumper($t2);
 	}
 	$t2->store;
+}
 }

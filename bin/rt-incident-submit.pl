@@ -14,12 +14,16 @@ use Error qw|:try|;
 use Date::Manip;
 use ConConn;
 use Scalar::Util qw(looks_like_number);
-use vars qw/ $opt_s $opt_i  $opt_p $opt_f/;
+use vars qw/ $opt_s $opt_i  $opt_p $opt_f $opt_v $opt_h/;
 use Getopt::Std;
 
-getopts('s:i:p:f:');
-my $debug = 0;
+getopts('s:i:p:f:v:h');
+my $debug = $opt_v || 0;
 my %config;
+
+if($opt_h){
+  print "Options: -s (Subject), -i (File name), -f (Config file), -v(debug)\n";
+}else{
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -58,4 +62,4 @@ my $ticket = RT::Client::REST::Ticket->new(
 	},
 )->store(text => $rttext);
 print "New ticket's ID is ", $ticket->id, "\n";
-
+}

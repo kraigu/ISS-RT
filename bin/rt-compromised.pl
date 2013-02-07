@@ -17,17 +17,18 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_c $opt_f/;
+use vars qw/ $opt_s $opt_e $opt_c $opt_f $opt_v $opt_h/;
 use Getopt::Std;
 
-getopts('s:e:c:f:');
+getopts('s:e:c:f:v:h');
 
-
-my $debug = 0;
+my $debug = $opt_v || 0;
 my ($ticket,$checkmonth,%config);
 my (%classifications,%constituencies);
 
-
+if($opt_h){
+   print "Options: -s(start-date),-e(end-date), -c(constituency),-f(config file), -v(debug)\n";
+}else{
 
 # default to the previous month's issues. Sort of.
 my $lm = $opt_s || UnixDate("-1m -1d","%Y-%m-%d");
@@ -89,4 +90,5 @@ print "RT Compromised Accounts report for $lm to $nm\n";
 print "\nConstituencies\n";
 
 print "$constituencies{$_}\t$_\n" for sort 
- { $constituencies{$b} <=> $constituencies{$a} } keys %constituencies;
+ { $constituencies{$b} <=> $constituencies{$a} } keys %constituencies; 
+}

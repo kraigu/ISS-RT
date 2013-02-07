@@ -19,14 +19,17 @@ use ConConn;
 use XML::XPath;
 use Socket;
 use Net::IPv4Addr qw( :all ); # yeah, both this and Socket for gethostbyaddr.
-use vars qw/ $opt_f/;
+use vars qw/ $opt_f $opt_v $opt_h/;
 use Getopt::Std;
 
-getopts('f:');
+getopts('f:v:h');
 
-my $debug = 0;
+my $debug = $opt_v || 0;
 my %config;
 
+if($opt_h){
+    print "Options: -f(config file), -v(debug)\n";
+}else{
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -144,4 +147,4 @@ my $ticket = RT::Client::REST::Ticket->new(
 )->store(text => $rttext);
 print "New ticket's ID is ", $ticket->id, "\n";
 # Submitted open. Shoot me now.
-
+}

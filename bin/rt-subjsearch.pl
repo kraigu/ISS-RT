@@ -15,11 +15,13 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_f $opt_v/;
+use vars qw/ $opt_s $opt_f $opt_v $opt_h/;
 use Getopt::Std;
 
-getopts('s:f:v:');
-
+getopts('s:f:v:h');
+if ($opt_h){
+      print "Options: -s(Search string), -f(config file), -v(debug)\n";
+}else{
 my $debug = $opt_v || 0;
 if($debug > 0){
 	print "Debug level is $debug\n";
@@ -76,4 +78,5 @@ for my $id (@ids) {
 	my $queue = $ticket->{'Queue'};
 	my $url = "https://rt.uwaterloo.ca/RTIR/Display.html?id=$id";
 	print "$url\nID: $id ($state)\tQueue: $queue\nSubject: $subj\nClassification: $class\nCreated: $cdate\nResolved: $rdate\n\n";
+}
 }

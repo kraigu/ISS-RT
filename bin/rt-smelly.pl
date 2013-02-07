@@ -16,12 +16,17 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/$opt_f/;
+use vars qw/$opt_f $opt_v $opt_h/;
 use Getopt::Std;
 
-getopts('f:');
-
+getopts('f:v:h');
+if($opt_h){
+	print "Options: -f(config file), -v(debug)\n";
+}else{
 my $debug = 0;
+if($opt_v){
+  $debug = $opt_v
+}
 my %config;
 
 if($opt_f){
@@ -85,4 +90,5 @@ for my $id (@ids) {
 	}
 	my $subj = $ticket->{'Subject'};
 	my $owner = $ticket->{'Owner'};
+}
 }

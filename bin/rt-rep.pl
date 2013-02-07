@@ -21,12 +21,12 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_c $opt_l $opt_C $opt_L $opt_v $opt_d $opt_h $opt_f/;
+use vars qw/ $opt_s $opt_e $opt_c $opt_l $opt_C $opt_L $opt_V $opt_v $opt_h $opt_f/;
 use Getopt::Std;
 
-getopts('s:e:f:clCLvdh');
+getopts('s:e:f:v:clCLVh');
 my $start_run = time();
-my $debug = 0;
+my $debug = $opt_v || 0;
 
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies,%config);
@@ -62,11 +62,11 @@ try {
 };
 
 if($opt_h){
-print "Available options: -s (start-date),  -e (end-date), -c (include Copyright), -l (include LE request), -C (Copyright only), -L (LE request only), -v (verbose report), -d (enable debugging)";
-print "\n";
+print "Available options: -s (start-date),  -e (end-date), -c (include Copyright), -l (include LE request), -C (Copyright only), -L (LE request only), -V (verbose report), -v (enable debugging)\n";
+print "If no dates are given, assume the previous calendar month. If only a start date is given, assume the current date as the end date\n"
 }
-#-v CSV output from weeklyrep.pl
-elsif($opt_v){
+#-V CSV output from weeklyrep.pl
+elsif($opt_V){
   if($opt_l && (!$opt_c) && (!$opt_L) && (!$opt_C)){
   $qstring = qq|
   Queue = 'Incidents'
@@ -324,12 +324,5 @@ print "\nConstituencies\n";
 
 print "$constituencies{$_}\t$_\n" for sort 
  { $constituencies{$b} <=> $constituencies{$a} } keys %constituencies;
-}
-
-#-d option
-my $end_run = time();
-if($opt_d){
-  my $run_time = $end_run - $start_run;   
-  print  "Query took $run_time seconds\n"; 
 }
 

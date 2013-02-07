@@ -13,13 +13,16 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/$opt_s $opt_f/;
+use vars qw/$opt_s $opt_f $opt_h/;
 use Getopt::Std;
 
-getopts('s:f:');
+getopts('s:f:h');
 my %config;
 my $ticket;
 
+if($opt_h){
+     print "Options: -s(Search string), -f(config file)\n";
+}else{
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -51,3 +54,4 @@ try {
 };
 
 print Dumper($ticket);
+}

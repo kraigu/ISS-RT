@@ -13,14 +13,17 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_r $opt_E $opt_d $opt_f/;
+use vars qw/ $opt_s $opt_e $opt_r $opt_E $opt_v $opt_f $opt_h/;
 use Getopt::Std;
 
-getopts('s:e:r:f:Ed');
-my $start_run = time();
-my $debug = 0;
-my %config;
+getopts('s:e:r:f:v:Eh');
 
+my $debug = $opt_v || 0;
+my %config;
+if($opt_h){
+   print "Options: -s(start-time), -e(end-time), -r(rearch for this ticker ID), -E(Send Emails to correspondence), -f(config file), -v(debug)\n";
+   print "If only -r is given, report for the ticket ID. If -r and -E are given, send Email for the ticket ID\n";
+}else{
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -205,10 +208,4 @@ for my $id (@ids) {
 	my $subj = $ticket->{'Subject'};
 	my $owner = $ticket->{'Owner'};
 }
-
-#-d option
-my $end_run = time();
-if($opt_d){
-  my $run_time = $end_run - $start_run;   
-  print  "Query took $run_time seconds\n"; 
 }

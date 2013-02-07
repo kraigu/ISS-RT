@@ -18,16 +18,19 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_f/;
+use vars qw/$opt_s $opt_f $opt_v $opt_h/;
 use Getopt::Std;
 
-getopts('s:f:');
+getopts('s:f:v:h');
 
-my $debug = 0;
+my $debug = $opt_v || 0;
 my %config;
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies);
 
+if ($opt_h){
+print "Options: -s(IP address), -f(config file), -v(debug)\n";
+}else{
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -78,4 +81,5 @@ for my $id (@ids) {
 	print "$queue ID: $id ($state)\nCreated: $cdate\n$subj\nClassification: $class";
 	if($rdate){ print "\nResolved: $rreason\t$rdate"; }
 	print "\nIP List:\n$ipl\n\n";
+}
 }

@@ -17,11 +17,15 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_f/;
+use vars qw/ $opt_s $opt_e $opt_f $opt_v $opt_h/;
 use Getopt::Std;
 
-getopts('s:e:f:');
-my $debug = 0;
+getopts('s:e:f:v:h');
+my $debug = $opt_v || 0;
+
+if($opt_h){
+     print "Options: -s(start-time), -e(end-time), -f(config file), -v(debug)\n";
+}else{
 
 my ($ticket,$checkmonth,%config);
 my (%classifications,%constituencies);
@@ -78,4 +82,5 @@ for my $id (@ids) {
 	if($debug > 2){
 		print Dumper($ticket);
 	}
+}
 }
