@@ -14,15 +14,25 @@ use Error qw|:try|;
 use Date::Manip;
 use ConConn;
 use Scalar::Util qw(looks_like_number);
-use vars qw/ $opt_s $opt_i  $opt_p $opt_f $opt_v $opt_h/;
-use Getopt::Std;
+use Getopt::Long;
 
-getopts('s:i:p:f:v:h');
+my ($opt_s, $opt_i, $opt_p, $opt_f, $opt_v, $opt_h, $opt_cl, $opt_co, $clasification, $constituency);
+
+GetOptions ("s=s" => \$opt_s,
+            "i=s" => \$opt_i, 
+            "p=s" => \$opt_p, 
+            "f=s" => \$opt_f, 
+            "v=s" => \$opt_v, 
+            "cl=s" => \$opt_cl, 
+            "co=s" => \$opt_co,
+            "h" => \$opt_h,       
+);  
+            
 my $debug = $opt_v || 0;
 my %config;
 
 if($opt_h){
-  print "Options: -s (Subject), -i (File name), -f (Config file), -v(debug)\n";
+  print "Options: -s (Subject), -i (File name), -p (priority), -f (Config file), -cl (Classification), -co (constituency), -v(Verbosity)\n";
 }else{
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
@@ -53,6 +63,11 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
+#assuming -cl and -co are mandatory 
+if ($opt_cl && $opt_co){
+   $clasification = $opt_cl;
+   $constituency = $opt_co;	
+}
 my $ticket = RT::Client::REST::Ticket->new(
 	rt => $rt,
 	queue => "Incidents",
@@ -60,6 +75,13 @@ my $ticket = RT::Client::REST::Ticket->new(
 	cf => {
 		'Risk Severity' => $pri
 	},
+	## set two fields
+	cf => {
+		'_RTIR_Classification' => $clasification
+	},
+	cf => {
+		'_RTIR_Constituency' => $constituency
+	},	
 )->store(text => $rttext);
 print "New ticket's ID is ", $ticket->id, "\n";
 }
