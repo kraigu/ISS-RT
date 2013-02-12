@@ -33,7 +33,8 @@ my %config;
 
 if($opt_h){
   print "Options: -s (Subject), -i (File name), -p (priority), -f (Config file), -cl (Classification), -co (constituency), -v(Verbosity)\n";
-}else{
+  exit 0;
+}
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -65,23 +66,17 @@ try {
 
 # set bogus values for classification/constituency to be fixed later
 # unless they're set on the command line
-$classification = '' || $opt_cl;
-$constituency = 'EDUNET' || $opt_co;
+$classification =  $opt_cl || '';
+$constituency =   $opt_co || 'EDUNET';
 
 my $ticket = RT::Client::REST::Ticket->new(
 	rt => $rt,
 	queue => "Incidents",
 	subject => $subject,
 	cf => {
-		'Risk Severity' => $pri
-	},
-	## set two fields
-	cf => {
-		'_RTIR_Classification' => $classification
-	},
-	cf => {
+		'Risk Severity' => $pri,
+		'_RTIR_Classification' => $classification,
 		'_RTIR_Constituency' => $constituency
 	},	
 )->store(text => $rttext);
 print "New ticket's ID is ", $ticket->id, "\n";
-}
