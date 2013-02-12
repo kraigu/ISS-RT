@@ -16,7 +16,7 @@ use ConConn;
 use Scalar::Util qw(looks_like_number);
 use Getopt::Long;
 
-my ($opt_s, $opt_i, $opt_p, $opt_f, $opt_v, $opt_h, $opt_cl, $opt_co, $clasification, $constituency);
+my ($opt_s, $opt_i, $opt_p, $opt_f, $opt_v, $opt_h, $opt_cl, $opt_co, $classification, $constituency);
 
 GetOptions ("s=s" => \$opt_s,
             "i=s" => \$opt_i, 
@@ -63,11 +63,11 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-#assuming -cl and -co are mandatory 
-if ($opt_cl && $opt_co){
-   $clasification = $opt_cl;
-   $constituency = $opt_co;	
-}
+# set bogus values for classification/constituency to be fixed later
+# unless they're set on the command line
+$classification = '' || $opt_cl;
+$constituency = 'EDUNET' || $opt_co;
+
 my $ticket = RT::Client::REST::Ticket->new(
 	rt => $rt,
 	queue => "Incidents",
@@ -77,7 +77,7 @@ my $ticket = RT::Client::REST::Ticket->new(
 	},
 	## set two fields
 	cf => {
-		'_RTIR_Classification' => $clasification
+		'_RTIR_Classification' => $classification
 	},
 	cf => {
 		'_RTIR_Constituency' => $constituency
