@@ -169,34 +169,31 @@ else {
       }
       else{
         my @corrspd;
-	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
-	my (@parent_id) = $rt->get_transaction_ids(parent_id => $id);
+      	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
+      	my (@parent_id) = $rt->get_transaction_ids(parent_id => $id);
         foreach my $ele (@parent_id){
-	  	my $name = $rt->get_transaction (parent_id => $id, id => $ele);
-	  	my @des = $name -> {'Description'};
-	  	if ($des[0] =~ /^Correspondence/){
-	  	push(@corrspd, $des[0]);
-		}	
-	}
-	my $lastperson = $corrspd[$#corrspd];
-	if($debug > 0) {
-		print Dumper($ticket);
-	}
-	my $subj = $ticket->{'Subject'};
-	my $ddate = $ticket->{'Due'};
-	my $owner = $ticket->{'Owner'};
-	if(@corrspd){
-	   my $lastperson = $corrspd[$#corrspd];
-	   my $last = substr $lastperson, 24;
-	   printf "%-10s %-12s %-12s %-30s %-30s\n",	
-           $id,$owner,$last,$ddate,$subj;
-        }else{
-           printf "%-10s %-12s %-12s %-30s %-30s\n",	
-           $id,$owner,$owner,$ddate,$subj;
-           } 	
-        	
-        }
-     }   
+    	  	my $name = $rt->get_transaction (parent_id => $id, id => $ele);
+    	  	my @des = $name -> {'Description'};
+    	  	if ($des[0] =~ /^Correspondence/){
+    	  	push(@corrspd, $des[0]);
+    		}	
+    	}
+    	my $lastperson = $corrspd[$#corrspd];
+    	if($debug > 0) {
+    		print Dumper($ticket);
+    	}
+    	my $subj = $ticket->{'Subject'};
+    	my $ddate = $ticket->{'Due'};
+    	my $owner = $ticket->{'Owner'};
+    	if(@corrspd){
+        my $lastperson = $corrspd[$#corrspd];
+        my $last = substr $lastperson, 24;
+        printf "%-10s %-12s %-12s %-30s %-30s\n",	$id,$owner,$last,$ddate,$subj;
+      } else{
+        printf "%-10s %-12s %-12s %-30s %-30s\n",	$id,$owner,$owner,$ddate,$subj;
+      }
+    }
+  }
 }
 
 $qstring = qq|
