@@ -25,7 +25,6 @@ use vars qw/ $opt_s $opt_e $opt_c $opt_l $opt_C $opt_L $opt_V $opt_v $opt_h $opt
 use Getopt::Std;
 
 getopts('s:e:f:v:clCLVh');
-my $start_run = time();
 my $debug = $opt_v || 0;
 
 my ($ticket,$checkmonth);
