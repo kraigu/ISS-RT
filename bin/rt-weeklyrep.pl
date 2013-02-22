@@ -18,18 +18,31 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/$opt_s $opt_e $opt_v $opt_f $opt_h/;
+use Getopt::Std;
 
-my $debug = 0;
+getopts('s:e:v:f:h');
+
+if($opt_h){
+  print "Options: -s (start-date), -e (end-date), -v(Verbosity)\n";
+  exit 0;
+}
+
+my $debug = $opt_v || 0;
 
 my ($ticket,$checkmonth);
-my (%classifications,%constituencies);
+my (%classifications,%constituencies,%config);
 
-my %config = ISSRT::ConConn::GetConfig();
+if($opt_f){
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
+}
 
 # default to the previous week's issues. Sort of.
 # RT's kind of weird about how it does date comparisons.
-my $lm = $ARGV[0] || UnixDate("-6d","%Y-%m-%d");
-my $nm = $ARGV[1] || UnixDate("+1d","%Y-%m-%d");
+my $lm = $opt_s || UnixDate("-6d","%Y-%m-%d");
+my $nm = $opt_e || UnixDate("+1d","%Y-%m-%d");
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
@@ -82,4 +95,3 @@ for my $id (@ids) {
 		print Dumper($ticket);
 	}
 }
-

@@ -14,14 +14,25 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/ $opt_s $opt_f $opt_v $opt_h/;
+use Getopt::Std;
 
-my $debug = 0;
+getopts('s:f:v:h');
+
+my $debug = $opt_v || 0;
 
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies);
+my %config;
 
-my %config = ISSRT::ConConn::GetConfig();
-
+if($opt_h){
+    print "Options: -s(Search string), -f(config file), -v(debug)\n";
+}else{
+if($opt_f){
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
+}
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
 	timeout => 30,
@@ -33,7 +44,7 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-my $searchstr = $ARGV[0] || die "No search string given\n";
+my $searchstr = $opt_s || die "No search string given\n";
 
 my $qstring = qq|
 Queue = 'Incidents'
@@ -58,4 +69,5 @@ for my $id (@ids) {
 	my $desc = $ticket->{'CF.{_RTIR_Description}'};
 	my $created = $ticket->{'Created'};
 	print "ID: $id\tSubject: $subj\tDescription: $desc\tCreated: $created\n";
+}
 }

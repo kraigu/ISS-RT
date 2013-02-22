@@ -17,17 +17,27 @@ use RT::Client::REST::Ticket;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/ $opt_s $opt_e $opt_f $opt_v $opt_h/;
+use Getopt::Std;
 
-my $debug = 0;
+getopts('s:e:f:v:h');
 
+my $debug = $opt_v || 0;
 my ($ticket,$checkmonth);
-my (%classifications,%constituencies);
+my (%classifications,%constituencies,%config);
 
-my %config = ISSRT::ConConn::GetConfig();
+if($opt_h){
+   print "Options: -s (start-date), -e (end-date), -f (config file), -v(debug)\n";
+}else{
+if($opt_f){
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
+}
 
 # default to the previous month's issues. Sort of.
-my $lm = $ARGV[0] || UnixDate("-1m -1d","%Y-%m-%d");
-my $nm = $ARGV[1] || UnixDate("today","%Y-%m-01");
+my $lm = $opt_s || UnixDate("-1m -1d","%Y-%m-%d");
+my $nm = $opt_e || UnixDate("today","%Y-%m-01");
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
@@ -78,4 +88,5 @@ for my $id (@ids) {
 		print Dumper($t2);
 	}
 	$t2->store;
+}
 }

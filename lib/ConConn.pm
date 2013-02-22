@@ -12,6 +12,9 @@ my $debug = 0;
 
 sub GetConfig{
 	my $configfile = qq|$ENV{"HOME"}/.rtrc|;
+	if($_[0]) {
+		$configfile = $_[0];
+	}
 	if( ! -e $configfile){ 
 		die "\n$configfile does not exist\n";
 	}

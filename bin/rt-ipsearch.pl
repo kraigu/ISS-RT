@@ -18,13 +18,24 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/$opt_s $opt_f $opt_v $opt_h/;
+use Getopt::Std;
 
-my $debug = 0;
+getopts('s:f:v:h');
 
+my $debug = $opt_v || 0;
+my %config;
 my ($ticket,$checkmonth);
 my (%classifications,%constituencies);
 
-my %config = ISSRT::ConConn::GetConfig();
+if ($opt_h){
+print "Options: -s(IP address), -f(config file), -v(debug)\n";
+}else{
+if($opt_f){
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
+}
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
@@ -37,7 +48,7 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-my $ipsearch = $ARGV[0] || die "No IP\n";
+my $ipsearch = $opt_s || die "No IP\n";
 
 my $qstring = qq|
 (Queue = 'Incidents' OR Queue = 'Investigations')
@@ -70,4 +81,5 @@ for my $id (@ids) {
 	print "$queue ID: $id ($state)\nCreated: $cdate\n$subj\nClassification: $class";
 	if($rdate){ print "\nResolved: $rreason\t$rdate"; }
 	print "\nIP List:\n$ipl\n\n";
+}
 }

@@ -15,13 +15,26 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/ $opt_s $opt_f $opt_v $opt_h/;
+use Getopt::Std;
 
-my $debug = 0;
+getopts('s:f:v:h');
+if ($opt_h){
+      print "Options: -s(Search string), -f(config file), -v(debug)\n";
+}else{
+my $debug = $opt_v || 0;
+if($debug > 0){
+	print "Debug level is $debug\n";
+}
 
 my ($ticket,$checkmonth);
-my (%classifications,%constituencies);
+my (%classifications,%constituencies,%config);
 
-my %config = ISSRT::ConConn::GetConfig();
+if($opt_f){
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
+}
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
@@ -34,7 +47,7 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-my $searchstr = $ARGV[0] || die "No search string given\n";
+my $searchstr = $opt_s || die "No search string given - specify with -s\n";
 
 my $qstring = qq|
 Queue = 'Incidents'
@@ -65,4 +78,5 @@ for my $id (@ids) {
 	my $queue = $ticket->{'Queue'};
 	my $url = "https://rt.uwaterloo.ca/RTIR/Display.html?id=$id";
 	print "$url\nID: $id ($state)\tQueue: $queue\nSubject: $subj\nClassification: $class\nCreated: $cdate\nResolved: $rdate\n\n";
+}
 }

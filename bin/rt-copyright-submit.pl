@@ -19,11 +19,22 @@ use ConConn;
 use XML::XPath;
 use Socket;
 use Net::IPv4Addr qw( :all ); # yeah, both this and Socket for gethostbyaddr.
+use vars qw/ $opt_f $opt_v $opt_h/;
+use Getopt::Std;
 
-my $debug = 0;
+getopts('f:v:h');
 
-my %config = ISSRT::ConConn::GetConfig();
+my $debug = $opt_v || 0;
+my %config;
 
+if($opt_h){
+    print "Options: -f(config file), -v(debug)\n";
+}else{
+if($opt_f){
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
+}
 # Set up Waterloo-specific subnets.
 # This should go into a configuration file.
 my @wirelessnets = ( "129.97.124.0/25","129.97.125.0/25" );
@@ -136,4 +147,4 @@ my $ticket = RT::Client::REST::Ticket->new(
 )->store(text => $rttext);
 print "New ticket's ID is ", $ticket->id, "\n";
 # Submitted open. Shoot me now.
-
+}

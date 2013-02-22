@@ -16,10 +16,24 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
+use vars qw/$opt_f $opt_v $opt_h/;
+use Getopt::Std;
 
+getopts('f:v:h');
+if($opt_h){
+	print "Options: -f(config file), -v(debug)\n";
+}else{
 my $debug = 0;
+if($opt_v){
+  $debug = $opt_v
+}
+my %config;
 
-my %config = ISSRT::ConConn::GetConfig();
+if($opt_f){
+	%config = ISSRT::ConConn::GetConfig($opt_f);
+} else {
+	%config = ISSRT::ConConn::GetConfig();
+}
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
@@ -76,4 +90,5 @@ for my $id (@ids) {
 	}
 	my $subj = $ticket->{'Subject'};
 	my $owner = $ticket->{'Owner'};
+}
 }
