@@ -28,11 +28,12 @@ my %config;
 if($opt_h){
    print "Options: -s(start-time), -e(end-time), -r(report on ticket ID), -E(Send Emails to correspondents), -f(config file), -v(debug)\n";
    print "If only -r is given, report for the ticket ID. If -r and -E are given, send Email for the ticket ID\n";
-}else{
-if($opt_f){
-	%config = ISSRT::ConConn::GetConfig($opt_f);
+   exit 0;
 } else {
-	%config = ISSRT::ConConn::GetConfig();
+  if($opt_f){
+  	%config = ISSRT::ConConn::GetConfig($opt_f);
+  } else {
+  	%config = ISSRT::ConConn::GetConfig();
 }
 
 my $rt = RT::Client::REST->new(
@@ -60,8 +61,8 @@ if($opt_s && $opt_e){
     AND CF.{_RTIR_State} = 'open'
     AND Due < '$tday'
     |;
-    print "Overdue Investigations from $lm to $nm\n";
-}elsif ($opt_s && (!$opt_e)){
+  print "Overdue Investigations from $lm to $nm\n";
+} elsif ($opt_s && (!$opt_e)){
   $lm = $opt_s;
   $nm = UnixDate("today","%Y-%m-%d");
   $qstring = qq|
@@ -71,8 +72,8 @@ if($opt_s && $opt_e){
     AND CF.{_RTIR_State} = 'open'
     AND Due < '$tday'
     |;
-    print "Overdue Investigations from $lm to $nm\n";
-}elsif ((!$opt_s) && (!$opt_e)){
+  print "Overdue Investigations from $lm to $nm\n";
+} elsif ((!$opt_s) && (!$opt_e)){
   $lm = $opt_s;
   $nm = UnixDate("today","%Y-%m-%d");
   $qstring = qq|
@@ -97,7 +98,7 @@ my @list;
 #-E send Emails
 if($opt_E && (!$opt_r)){
   for my $id (@ids) {
-  	my @corrspd;
+    my @corrspd;
   	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
   	my (@parent_id) = $rt->get_transaction_ids(parent_id => $id);
     foreach my $ele (@parent_id){
@@ -112,23 +113,23 @@ if($opt_E && (!$opt_r)){
   		print Dumper($ticket);
   	}
   	if(@corrspd){
-  	   my $lastperson = $corrspd[$#corrspd];
-  	   my $last = substr $lastperson, 24;
-  	   if( ($last ne "mpatters" ) && ($last ne "issminion") ){ # hardcoded lists of users are evil
-  	     push (@list, $id);
-       }
+      my $lastperson = $corrspd[$#corrspd];
+      my $last = substr $lastperson, 24;
+      if( ($last ne "mpatters" ) && ($last ne "issminion") ){ # hardcoded lists of users are evil
+       push (@list, $id);
+      }
     }
   }  
   foreach my $overdue (@list){
-    my $msg = $rt->correspond(
-      ticket_id   => $overdue,
-      message     => $overduemessage,
-    );
-  }
-  if($debug > 0){
-    print "Emails Sent";
-  }
-}	
+    if($debug > 4){
+      print "Would send email on $overdue\n";
+    } else {
+      my $msg = $rt->correspond(
+        ticket_id   => $overdue,
+        message     => $overduemessage,
+      );
+    }
+  }	
 else {   
   for my $id (@ids){
     if($opt_r && (!$opt_E)){
@@ -190,7 +191,7 @@ else {
         my $last = substr $lastperson, 24;
         printf "%-10s %-12s %-12s %-30s %-30s\n",	$id,$owner,$last,$ddate,$subj;
       } else{
-        printf "%-10s %-12s %-12s %-30s %-30s\n",	$id,$owner,$owner,$ddate,$subj;
+          printf "%-10s %-12s %-12s %-30s %-30s\n",	$id,$owner,$owner,$ddate,$subj;
       }
     }
   }
