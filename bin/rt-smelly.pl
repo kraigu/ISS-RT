@@ -22,7 +22,8 @@ use Getopt::Std;
 getopts('f:v:h');
 if($opt_h){
 	print "Options: -f(config file), -v(debug)\n";
-}else{
+	exit 0;
+}
 my $debug = 0;
 if($opt_v){
   $debug = $opt_v
@@ -90,5 +91,4 @@ for my $id (@ids) {
 	}
 	my $subj = $ticket->{'Subject'};
 	my $owner = $ticket->{'Owner'};
-}
 }
