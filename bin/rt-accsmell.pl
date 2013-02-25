@@ -25,7 +25,8 @@ my $debug = $opt_v || 0;
 
 if($opt_h){
      print "Options: -s(start-time), -e(end-time), -f(config file), -v(debug)\n";
-}else{
+     exit 0;
+}
 
 my ($ticket,$checkmonth,%config);
 my (%classifications,%constituencies);
@@ -82,5 +83,4 @@ for my $id (@ids) {
 	if($debug > 2){
 		print Dumper($ticket);
 	}
-}
 }
