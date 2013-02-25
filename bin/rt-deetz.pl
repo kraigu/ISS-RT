@@ -22,7 +22,8 @@ my $ticket;
 
 if($opt_h){
      print "Options: -s(Search string), -f(config file)\n";
-}else{
+     exit 0;
+}
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -54,4 +55,3 @@ try {
 };
 
 print Dumper($ticket);
-}
