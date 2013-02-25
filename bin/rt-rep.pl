@@ -61,11 +61,12 @@ try {
 };
 
 if($opt_h){
-print "Available options: -s (start-date),  -e (end-date), -c (include Copyright), -l (include LE request), -C (Copyright only), -L (LE request only), -V (verbose report), -v (enable debugging)\n";
-print "If no dates are given, assume the previous calendar month. If only a start date is given, assume the current date as the end date\n"
+    print "Available options: -s (start-date),  -e (end-date), -c (include Copyright), -l (include LE request), -C (Copyright only), -L (LE request only), -V (verbose report), -v (enable debugging)\n";
+    print "If no dates are given, assume the previous calendar month. If only a start date is given, assume the current date as the end date\n";
+    exit 0;
 }
 #-V CSV output from weeklyrep.pl
-elsif($opt_V){
+if($opt_V){
   if($opt_l && (!$opt_c) && (!$opt_L) && (!$opt_C)){
   $qstring = qq|
   Queue = 'Incidents'
