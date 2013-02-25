@@ -25,15 +25,18 @@ getopts('s:f:v:h');
 
 my $debug = $opt_v || 0;
 my %config;
-my ($ticket,$checkmonth);
+my ($ticket,$checkmonth,$ipsearch);
 my (%classifications,%constituencies);
 
 if ($opt_h){
-print "Options: -s(IP address), -f(config file), -v(debug)\n";
-}else{
+	print "Options: -s(IP address), -f(config file), -v(debug)\n";
+	exit 0;
+}
+
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
-} else {
+} 
+else {
 	%config = ISSRT::ConConn::GetConfig();
 }
 
@@ -48,7 +51,13 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-my $ipsearch = $opt_s || die "No IP\n";
+if( !($opt_s) && scalar @ARGV == 1) { # we got precisely one argument
+	$ipsearch = $ARGV[0];
+} else { # we got multiple arguments, one of which might be the required -s
+	$ipsearch = $opt_s || die "No IP\n";
+}
+
+die "$ipsearch doesn't look like an IPv4 address\n" unless $ipsearch =~ /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
 
 my $qstring = qq|
 (Queue = 'Incidents' OR Queue = 'Investigations')
@@ -81,5 +90,4 @@ for my $id (@ids) {
 	print "$queue ID: $id ($state)\nCreated: $cdate\n$subj\nClassification: $class";
 	if($rdate){ print "\nResolved: $rreason\t$rdate"; }
 	print "\nIP List:\n$ipl\n\n";
-}
 }
