@@ -28,7 +28,8 @@ my (%classifications,%constituencies,%config);
 
 if($opt_h){
    print "Options: -s (start-date), -e (end-date), -f (config file), -v(debug)\n";
-}else{
+   exit 0;
+}
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -88,5 +89,4 @@ for my $id (@ids) {
 		print Dumper($t2);
 	}
 	$t2->store;
-}
 }
