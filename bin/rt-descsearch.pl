@@ -27,7 +27,8 @@ my %config;
 
 if($opt_h){
     print "Options: -s(Search string), -f(config file), -v(debug)\n";
-}else{
+    exit 0;
+}
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -69,5 +70,4 @@ for my $id (@ids) {
 	my $desc = $ticket->{'CF.{_RTIR_Description}'};
 	my $created = $ticket->{'Created'};
 	print "ID: $id\tSubject: $subj\tDescription: $desc\tCreated: $created\n";
-}
 }
