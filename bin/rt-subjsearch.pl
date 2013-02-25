@@ -21,7 +21,8 @@ use Getopt::Std;
 getopts('s:f:v:h');
 if ($opt_h){
       print "Options: -s(Search string), -f(config file), -v(debug)\n";
-}else{
+      exit 0;
+}
 my $debug = $opt_v || 0;
 if($debug > 0){
 	print "Debug level is $debug\n";
@@ -78,5 +79,4 @@ for my $id (@ids) {
 	my $queue = $ticket->{'Queue'};
 	my $url = "https://rt.uwaterloo.ca/RTIR/Display.html?id=$id";
 	print "$url\nID: $id ($state)\tQueue: $queue\nSubject: $subj\nClassification: $class\nCreated: $cdate\nResolved: $rdate\n\n";
-}
 }
