@@ -29,7 +29,8 @@ my %config;
 
 if($opt_h){
     print "Options: -f(config file), -v(debug)\n";
-}else{
+    exit 0;
+}
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } else {
@@ -147,4 +148,3 @@ my $ticket = RT::Client::REST::Ticket->new(
 )->store(text => $rttext);
 print "New ticket's ID is ", $ticket->id, "\n";
 # Submitted open. Shoot me now.
-}
