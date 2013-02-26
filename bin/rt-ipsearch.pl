@@ -18,10 +18,10 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/$opt_s $opt_f $opt_v $opt_h/;
+use vars qw/$opt_s $opt_f $opt_v $opt_o $opt_h/;
 use Getopt::Std;
 
-getopts('s:f:v:h');
+getopts('s:f:v:oh');
 
 my $debug = $opt_v || 0;
 my %config;
@@ -29,9 +29,11 @@ my ($ticket,$checkmonth,$ipsearch);
 my (%classifications,%constituencies);
 
 if ($opt_h){
-	print "Options: -s(IP address), -f(config file), -v(debug)\n";
+	print "Options: -s(IP address), -f(config file), -o(show if there are open RTS), -v(debug)\n";
 	exit 0;
 }
+
+
 
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
@@ -83,6 +85,13 @@ for my $id (@ids) {
 	my $ipl = $ticket->{'CF.{_RTIR_IP}'};
 	my $subj = $ticket->{'Subject'};
 	my $state = $ticket->{'CF.{_RTIR_State}'};
+	if ($opt_o){
+	    if($state eq "open"){
+	    	exit 1;		
+	    }else{
+	        exit 0;	
+	    }	
+	}
 	my $queue = $ticket->{'Queue'};
 	my $cdate = $ticket->{'Created'};
 	my $rdate = $ticket->{'Resolved'} || '';
