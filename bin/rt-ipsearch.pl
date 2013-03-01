@@ -33,6 +33,8 @@ if ($opt_h){
 	exit 0;
 }
 
+
+
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } 
@@ -85,8 +87,10 @@ for my $id (@ids) {
 	my $state = $ticket->{'CF.{_RTIR_State}'};
 	if ($opt_o){
 	    if($state eq "open"){
+              print 1;
 	    	exit 1;		
 	    }else{
+              print 0;
 	        exit 0;	
 	    }	
 	}
