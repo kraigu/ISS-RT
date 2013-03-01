@@ -33,8 +33,6 @@ if ($opt_h){
 	exit 0;
 }
 
-
-
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } 
