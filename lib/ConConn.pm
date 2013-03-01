@@ -33,4 +33,21 @@ sub GetConfig{
 	return %config;
 }
 
+sub getSID{
+	my $configfile = qq|$ENV{"HOME"}/ExceptionSID|;
+	if($_[0]) {
+		$configfile = $_[0];
+	}
+	if( ! -e $configfile){ 
+		die "\n$configfile does not exist\n";
+	}
+	my $perms = sprintf("%o",(stat($configfile))[2] & 07777);
+	if($debug > 3){ print "Permissions on rc file: " . Dumper($perms); }
+	die "\nConfig file must not have any more than owner rw\n"
+		unless ($perms == '600' || $perms == '0400');
+        open(FILE, $configfile);
+        my @output =<FILE>;
+        return @output;
+}
+
 1;
