@@ -147,7 +147,9 @@ foreach my $key (keys %uniip){
               }
               my $body = "Trigger Event(s):\n".$trig_event."\n".$ibdump."\n".$snfindip_today."\n".$qr_symsearch;
               if ($opt_p){
-                     print $body."\n";
+                    if (find_exception($key) ne "true"){
+                           print $body."\n";
+                    }
               } else {
                     if (find_exception($key) ne "true"){
                            #print "Created a RT for $key\n";
