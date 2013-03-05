@@ -51,7 +51,7 @@ sub newticket{
 sub trigger_event{
      my $trig_ip = $_[0];
      my $trigger;
-     my @result = `sn-goodsids.rb`;
+     my @result = `ruby sn-goodsids.rb`;
      foreach my $line (@result){
            chomp($line);
            my @curline = split(" ", $line);
@@ -92,7 +92,7 @@ sub find_exception{
      }     
 }
 
-my @output = `sn-goodsids.rb`;
+my @output = `ruby sn-goodsids.rb`;
 foreach my $line (@output){
 	chomp($line);
         my @currline = split(" ", $line);
@@ -108,17 +108,17 @@ foreach my $line (@output){
 
 foreach my $key (keys %uniip){
         my ($snfindip_today,$ibdump,$qr_symsearch,$gid);
-        my $result = `rt-ipsearch.pl -s $key -o`;
+        my $result = `perl rt-ipsearch.pl -s $key -o`;
         if ($debug > 0){
               print "Ip address = $key and ipsearch = $result\n";
         }
         if ($result eq "0"){
-              my $trig_event = trigger_event($key);
               if (find_exception($key) ne "true"){
+              my $trig_event = trigger_event($key);
               eval {
                     local $SIG{ALRM} = sub { die "alarm\n" }; 
                     alarm 30;
-                    $ibdump = `IBDump.pl -i $key`;
+                    $ibdump = `perl IBDump.pl -i $key`;
                     alarm 0;
               };
               if ($@) {
@@ -128,7 +128,7 @@ foreach my $key (keys %uniip){
               eval {
                     local $SIG{ALRM} = sub { die "alarm\n" }; 
                     alarm 300;
-                    $snfindip_today = `sn-findip.rb -i $key -p`;
+                    $snfindip_today = `ruby sn-findip.rb -i $key -p`;
                     alarm 0;
               };
               if ($@) {
@@ -138,7 +138,7 @@ foreach my $key (keys %uniip){
               eval {
                     local $SIG{ALRM} = sub { die "alarm\n" }; 
                     alarm 300;
-                    $qr_symsearch = `qr-symsearch.pl -i $key `;
+                    $qr_symsearch = `perl qr-symsearch.pl -i $key `;
                     alarm 0;
               };
               if ($@) {
