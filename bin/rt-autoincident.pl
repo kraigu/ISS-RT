@@ -113,6 +113,7 @@ foreach my $key (keys %uniip){
               print "Ip address = $key and ipsearch = $result\n";
         }
         if ($result eq "0"){
+           if (find_exception($key) ne "true"){
               my $trig_event = trigger_event($key);
               eval {
                     local $SIG{ALRM} = sub { die "alarm\n" }; 
@@ -146,14 +147,11 @@ foreach my $key (keys %uniip){
               }
               my $body = "Trigger Event(s):\n".$trig_event."\n".$ibdump."\n".$snfindip_today."\n".$qr_symsearch;
               if ($opt_p){
-                    if (find_exception($key) ne "true"){
                            print $body."\n";
-                    }
               } else {
-                    if (find_exception($key) ne "true"){
                            #print "Created a RT for $key\n";
-                           #newticket($body);
-                    }       
-              }    
+                           #newticket($body);      
+              }
+            }    
         }
 }
