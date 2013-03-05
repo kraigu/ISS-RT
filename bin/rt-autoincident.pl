@@ -128,7 +128,6 @@ foreach my $key (keys %uniip){
                     local $SIG{ALRM} = sub { die "alarm\n" }; 
                     alarm 300;
                     $snfindip_today = `sn-findip.rb -i $key -p`;
-                    $gid = 
                     alarm 0;
               };
               if ($@) {
