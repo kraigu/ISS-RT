@@ -152,6 +152,6 @@ foreach my $key (keys %uniip){
                            #print "Created a RT for $key\n";
                            #newticket($body);      
               }
-            }    
+           }    
         }
 }
