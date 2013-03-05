@@ -114,6 +114,7 @@ foreach my $key (keys %uniip){
         }
         if ($result eq "0"){
               my $trig_event = trigger_event($key);
+              if (find_exception($key) ne "true"){
               eval {
                     local $SIG{ALRM} = sub { die "alarm\n" }; 
                     alarm 30;
@@ -128,7 +129,6 @@ foreach my $key (keys %uniip){
                     local $SIG{ALRM} = sub { die "alarm\n" }; 
                     alarm 300;
                     $snfindip_today = `sn-findip.rb -i $key -p`;
-                    $gid = 
                     alarm 0;
               };
               if ($@) {
@@ -147,12 +147,11 @@ foreach my $key (keys %uniip){
               }
               my $body = "Trigger Event(s):\n".$trig_event."\n".$ibdump."\n".$snfindip_today."\n".$qr_symsearch;
               if ($opt_p){
-                     print $body."\n";
+                           print $body."\n";
               } else {
-                    if (find_exception($key) ne "true"){
                            #print "Created a RT for $key\n";
-                           #newticket($body);
-                    }       
+                           #newticket($body);      
+              }
               }    
         }
 }
