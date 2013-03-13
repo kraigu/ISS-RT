@@ -13,10 +13,10 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_r $opt_E $opt_v $opt_f $opt_h/;
+use vars qw/ $opt_s $opt_e $opt_r $opt_E $opt_v $opt_f $opt_h $opt_n/;
 use Getopt::Std;
 
-getopts('s:e:r:f:v:Eh');
+getopts('s:e:r:f:v:Ehn');
 
 my $overduemessage = qq|
 No correspondence has been received for this ticket lately, and it is now overdue.
@@ -99,9 +99,8 @@ my @ids = $rt->search(
 if($debug > 0){	print scalar @ids . " investigations\n"; }
 if($debug > 1){	print Dumper(@ids); }
 
-#-E send Emails
-if($opt_E && (!$opt_r)){
-  foreach my $id (@ids) {
+#get a list that needs to send Emails for
+foreach my $id (@ids) {
         my @corrspd;
   	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
   	my (@parent_id) = $rt->get_transaction_ids(parent_id => $id);
@@ -123,10 +122,11 @@ if($opt_E && (!$opt_r)){
                          push (@list, $id);
                     }
         }
-  }
-  if($debug > 0) {
-    print Dumper(@list);
-  }  
+}
+
+if($opt_n) {
+   print Dumper(@list);
+} elsif($opt_E && (!$opt_r)){  
 # foreach my $overdue (@list){
      # if($debug > 4){
             # print "Would send email on $overdue\n";
