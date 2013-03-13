@@ -19,17 +19,21 @@ use Getopt::Std;
 getopts('s:e:r:f:v:Eh');
 
 my $overduemessage = qq|
-Please note that no correspondence has been received for this ticket lately,
-and that it is now overude.
+No correspondence has been received for this ticket lately, and it is now overdue.
+
+Please update this ticket with any missing information, or let us know what information
+you need from us in order to proceed.
 |;
 
 my $debug = $opt_v || 0;
 my(%config,@list,$lm,$nm,$qstring);
 
 if($opt_h){
-        print "Options: -s(start-time), -e(end-time), -r(report on ticket ID), -E(Send Emails to correspondents), -f(config file), -v(debug)\n";
-        print "If only -r is given, report for the ticket ID. If -r and -E are given, send Email for the ticket ID\n";
-        exit 0;
+  print qq|
+Options: -s(start-time), -e(end-time), -r(report on ticket ID), -E(Send Emails to correspondents), -f(config file), -v(debug)
+If only -r is given, report for the ticket ID. The -r and -E options may be used in combination.
+|;
+  exit 0;
 }
  
 if($opt_f){
