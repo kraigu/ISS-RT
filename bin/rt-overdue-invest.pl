@@ -120,22 +120,21 @@ if($opt_E && (!$opt_r)){
                     }
         }
   }
-
-  # foreach my $overdue (@list){
-    # if($debug > 4){
-           # print "Would send email on $overdue\n";
-    # } else {
-          # my $msg = $rt->correspond(
-          # ticket_id   => $overdue,
-          # message     => $overduemessage,
-      # );
-    # }
-  # }
-}  	
-else {   
-  foreach my $id (@ids){
-    #-r search if one particular ticket is overdue
-    if($opt_r && (!$opt_E)){
+  if($debug > 0) {
+    print Dumper(@list);
+  }  
+# foreach my $overdue (@list){
+     # if($debug > 4){
+            # print "Would send email on $overdue\n";
+     # } else {
+            # my $msg = $rt->correspond(
+            # ticket_id   => $overdue,
+            # message     => $overduemessage,
+            # );
+     # }
+ #}
+} elsif($opt_r && (!$opt_E)){	#-r(ticket number) search if the particular ticket is overdue   
+   foreach my $id (@ids){
       if ($id == $opt_r){
         my @corrspd;
         my ($ticket) = $rt->show(type=>'ticket',id=>$id);
@@ -161,8 +160,10 @@ else {
         } else {
           printf "%-10s %-12s %-12s %-30s %-30s\n",	$id,$owner,$owner,$ddate,$subj;
         }
-      } # if that ticket is overdue, send Email to this ticket
-    } elsif($opt_r && $opt_E){
+      }
+   }    # if that ticket(-r) is overdue, send Email to this ticket
+} elsif($opt_r && $opt_E){
+     foreach my $id (@ids){
         if ($id == $opt_r){
           # my $msg = $rt->correspond(
             # ticket_id   => $opt_r,
@@ -170,8 +171,9 @@ else {
           # );
       	   print "Email has been sent to $id\n"; 	
       	}
-    }
-    else{#print a report
+      }	
+} else {#print a report
+   foreach my $id (@ids){
         my @corrspd;
       	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
       	my (@parent_id) = $rt->get_transaction_ids(parent_id => $id);
@@ -196,7 +198,6 @@ else {
         } else{
              printf "%-10s %-12s %-12s %-30s %-30s\n",	$id,$owner,$owner,$ddate,$subj;
         }
-    }
   }
 }
 
