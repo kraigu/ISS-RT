@@ -7,7 +7,6 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-
 use Data::Dumper;
 use RT::Client::REST;
 use Error qw|:try|;
@@ -30,7 +29,7 @@ my(%config,@list,$lm,$nm,$qstring);
 
 if($opt_h){
   print qq|
-Options: -s(start-time), -e(end-time), -r(report on ticket ID), -E(Send Emails to correspondents), -f(config file), -v(debug)
+Options: -s(start-time), -e(end-time), -r(report on ticket ID), -E(Send Emails to correspondents), -n(display last Correspondence), -f(config file), -v(debug)
 If only -r is given, report for the ticket ID. The -r and -E options may be used in combination.
 |;
   exit 0;
