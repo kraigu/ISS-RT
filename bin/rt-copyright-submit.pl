@@ -19,16 +19,17 @@ use ConConn;
 use XML::XPath;
 use Socket;
 use Net::IPv4Addr qw( :all ); # yeah, both this and Socket for gethostbyaddr.
-use vars qw/ $opt_f $opt_v $opt_h/;
+use vars qw/$opt_f $opt_v $opt_h $opt_c/;
 use Getopt::Std;
 
 getopts('f:v:h');
 
 my $debug = $opt_v || 0;
+my $sclosed = $opt_c || 0;
 my %config;
 
 if($opt_h){
-    print "Options: -f(config file), -v(debug)\n";
+    print "Options: -f(config file), -v(debug), -c(submit closed)\n";
     exit 0;
 }
 if($opt_f){
@@ -141,10 +142,15 @@ my $ticket = RT::Client::REST::Ticket->new(
 	queue => "Incidents",
 	subject => $subject,
 	cf => {
-		'Risk Severity' => 2,
+		'Risk Severity' => 1,
 		'_RTIR_Classification' => "Copyright",
 		'_RTIR_Constituency' => $constit
 	},
 )->store(text => $rttext);
-print "New ticket's ID is ", $ticket->id, "\n";
-# Submitted open. Shoot me now.
+my $tid = $ticket->id;
+print "New ticket's ID is $tid\n";
+
+if($sclosed){
+	if ($debug > 0){ print "Closing ticket $tid\n"; }
+	# want to set CF.{_RTIR_State} to 'resolved', CF.{_RTIR_Resolution} to 'successfully resolved', and Status to 'resolved'
+}
