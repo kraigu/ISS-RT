@@ -19,17 +19,17 @@ use ConConn;
 use XML::XPath;
 use Socket;
 use Net::IPv4Addr qw( :all ); # yeah, both this and Socket for gethostbyaddr.
-use vars qw/$opt_f $opt_v $opt_h $opt_c/;
+use vars qw/$opt_f $opt_v $opt_x $opt_h $opt_c/;
 use Getopt::Std;
 
-getopts('f:v:h');
+getopts('f:v:x:hc');
 
 my $debug = $opt_v || 0;
 my $sclosed = $opt_c || 0;
 my %config;
 
 if($opt_h){
-    print "Options: -f(config file), -v(debug), -c(submit closed)\n";
+    print "Options: -f(config file), -v(debug), -x(xml file), -c(submit closed)\n";
     exit 0;
 }
 if($opt_f){
@@ -67,19 +67,22 @@ sub find_c() {
 
 my $inXML = 0;
 my $xmlString = "";
-while(<>){
-	if(m/<\?xml.*?>/) {
+if ($opt_x){
+   open(FILE, $opt_x);
+   my @output =<FILE>;
+   foreach my $line (@output){
+	if( $line =~ m/<\?xml.*?>/) {
 		$inXML = 1;
 	}
-	if(m#</Infringement>#) {
-		$xmlString .= $_;;
+	if($line =~ m#</Infringement>#) {
+		$xmlString .= $line;;
 		$inXML = 0;
 	}
 	if($inXML) {
-		$xmlString .= $_;;
+		$xmlString .= $line;;
 	}
 }
-
+}
 my ($ch,$ts,$cid,$ip,$dname,$title,$ft,$dv,$fn,$constit) = "";
 
 if($xmlString) {
@@ -153,4 +156,11 @@ print "New ticket's ID is $tid\n";
 if($sclosed){
 	if ($debug > 0){ print "Closing ticket $tid\n"; }
 	# want to set CF.{_RTIR_State} to 'resolved', CF.{_RTIR_Resolution} to 'successfully resolved', and Status to 'resolved'
+	my $ip_in_range = &find_c($ip);
+	if ($constit eq "ResNet" || $ip_in_range eq "Academic-Support"){
+	           my $t = $rt->edit(type => 'ticket', 
+	                             id => $tid, 
+	                             set => { status => 'resolved'}     
+                                    );	
+        }
 }
