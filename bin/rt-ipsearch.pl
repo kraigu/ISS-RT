@@ -33,8 +33,6 @@ if ($opt_h){
 	exit 0;
 }
 
-
-
 if($opt_f){
 	%config = ISSRT::ConConn::GetConfig($opt_f);
 } 
@@ -69,7 +67,8 @@ if($debug > 0){ print "Query string\n$qstring\n"; }
 
 my @ids = $rt->search(
 	type => 'ticket',
-	query => $qstring
+	query => $qstring,
+	orderby => '-created'
 );
 
 if($debug > 0){	print scalar @ids . " incidents\n"; }
@@ -87,11 +86,11 @@ for my $id (@ids) {
 	my $state = $ticket->{'CF.{_RTIR_State}'};
 	if ($opt_o){
 	    if($state eq "open"){
-              print 1;
+            print 1;
 	    	exit 1;		
 	    }else{
-              print 0;
-	        exit 0;	
+			print 0;
+			exit 0;	
 	    }	
 	}
 	my $queue = $ticket->{'Queue'};
