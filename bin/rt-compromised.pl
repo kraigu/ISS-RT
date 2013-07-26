@@ -17,17 +17,17 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_c $opt_f $opt_v $opt_h/;
+use vars qw/ $opt_s $opt_e $opt_c $opt_f $opt_v $opt_h $opt_x/;
 use Getopt::Std;
 
-getopts('s:e:c:f:v:h');
+getopts('s:e:c:f:v:hx');
 
 my $debug = $opt_v || 0;
 my ($ticket,$checkmonth,%config);
 my (%classifications,%constituencies);
 
 if($opt_h){
-   print "Options: -s(start-date),-e(end-date), -c(constituency),-f(config file), -v(debug)\n";
+   print "Options: -s(start-date),-e(end-date), -c(constituency),-f(config file), -x (HTML), -v(debug)\n";
    exit 0;
 }
 
@@ -72,6 +72,20 @@ my @ids = $rt->search(
 if($debug > 0){	print scalar @ids . " incidents\n"; }
 if($debug > 1){	print Dumper(@ids); }
 
+if($opt_x){
+	print qq|
+<table width="85%" border="1" summary="Compromised Accounts">
+<caption>Compromised Accounts</caption>
+<tr>
+ <th scope="col">Incident</th>
+ <th scope="col">Userid</th>
+ <th scope="col">Constituency</th>
+ <th scope="col">Subject</th>
+ <th scope="col">RTIR link</th>
+</tr>
+|;
+}
+
 for my $id (@ids) {
 	# show() returns a hash reference
 	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
@@ -80,15 +94,26 @@ for my $id (@ids) {
 	$constituencies{$conskey} ||= 0;
 	$constituencies{$conskey} += 1;
 	my $pwned = $ticket->{'CF.{Userid}'} || 'Unset';
-	print "$id\t$pwned\t$conskey\t$ticket->{'Subject'}\n";
+	if($opt_x){
+		print qq|<tr><td>$id</td><td>$pwned</td><td>$conskey</td><td>$ticket->{'Subject'}</td>
+		<td><a href="https://$config{hostname}/RTIR/Display.html?id=$id">RTIR link</a></td>
+		|;
+		# HTML output
+	} else {
+		print "$id\t$pwned\t$conskey\t$ticket->{'Subject'}\n";
+	}
 	if($debug > 2){
 		print Dumper($ticket);
 	}
 }
 
-print "RT Compromised Accounts report for $lm to $nm\n";
+my $msgtxt="RT Compromised Accounts report for $lm to $nm\n";
 
-print "\nConstituencies\n";
+if($opt_x){
+	print qq|</table><p>$msgtxt</p>|;
+} else {
+	print $msgtxt;
+	print "$constituencies{$_}\t$_\n" for sort 
+ 		{ $constituencies{$b} <=> $constituencies{$a} } keys %constituencies;
+}
 
-print "$constituencies{$_}\t$_\n" for sort 
- { $constituencies{$b} <=> $constituencies{$a} } keys %constituencies; 
