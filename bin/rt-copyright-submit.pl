@@ -67,22 +67,27 @@ sub find_c() {
 
 my $inXML = 0;
 my $xmlString = "";
-if ($opt_x){
-   open(FILE, $opt_x);
-   my @output =<FILE>;
-   foreach my $line (@output){
-	if( $line =~ m/<\?xml.*?>/) {
+my @output;
+if($opt_x) {
+	open(FILE, $opt_x);
+	@output = <FILE>;
+}else {
+	@output = <STDIN>;
+}
+
+for(@output){
+	if($inXML != -1 && m/<\?xml.*?>/) {
 		$inXML = 1;
 	}
-	if($line =~ m#</Infringement>#) {
-		$xmlString .= $line;;
-		$inXML = 0;
+	if($inXML != -1 && m#</Infringement>#) {
+		$xmlString .= $line;
+		$inXML = -1;
 	}
-	if($inXML) {
-		$xmlString .= $line;;
+	if($inXML == 1) {
+		$xmlString .= $_;
 	}
 }
-}
+
 my ($ch,$ts,$cid,$ip,$dname,$title,$ft,$dv,$fn,$constit) = "";
 
 if($xmlString) {
@@ -139,28 +144,35 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-# Create the ticket.
-my $ticket = RT::Client::REST::Ticket->new(
-	rt => $rt,
-	queue => "Incidents",
-	subject => $subject,
-	cf => {
-		'Risk Severity' => 1,
-		'_RTIR_Classification' => "Copyright",
-		'_RTIR_Constituency' => $constit
-	},
-)->store(text => $rttext);
-my $tid = $ticket->id;
-print "New ticket's ID is $tid\n";
+#make sure the incident has not already been submitted
+my $qstring = qq|
+Queue = 'Incidents'
+AND Subject LIKE 'Copyright% $cid '
+|;
 
-if($sclosed){
-	if ($debug > 0){ print "Closing ticket $tid\n"; }
-	# want to set CF.{_RTIR_State} to 'resolved', CF.{_RTIR_Resolution} to 'successfully resolved', and Status to 'resolved'
-	my $ip_in_range = &find_c($ip);
-	if ($constit eq "ResNet" || $ip_in_range eq "Academic-Support"){
-	           my $t = $rt->edit(type => 'ticket', 
-	                             id => $tid, 
-	                             set => { status => 'resolved'}     
-                                    );	
-        }
+my $isrepeat = $rt->search(
+	type => 'ticket',
+	query => $qstring,
+);
+
+my $status = "open";
+if($sclosed && ($constit eq "ResNet" || $constit eq "Academic-Support")) {
+	$status = "resolved";
+}
+
+# Create the ticket.
+unless($isrepeat) {
+	my $ticket = RT::Client::REST::Ticket->new(
+		rt => $rt,
+		queue => "Incidents",
+		subject => $subject,
+		status => $status,
+		cf => {
+			'Risk Severity' => 1,
+			'_RTIR_Classification' => "Copyright",
+			'_RTIR_Constituency' => $constit,
+			'_RTIR_State' => $status,
+		},
+	)->store(text => $rttext);
+	print "New ticket's id is ", $ticket->id, "\n";
 }
