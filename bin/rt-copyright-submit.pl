@@ -137,6 +137,8 @@ my $isrepeat = $rt->search(
 	query => $qstring,
 );
 
+my $status = "resolved";
+$status = "open" if($constit eq "unclassified");
 
 # Create the ticket.
 unless($isrepeat) {
@@ -144,12 +146,12 @@ unless($isrepeat) {
 		rt => $rt,
 		queue => "Incidents",
 		subject => $subject,
-		status => 'resolved',
+		status => $status,
 		cf => {
 			'Risk Severity' => 1,
 			'_RTIR_Classification' => "Copyright",
 			'_RTIR_Constituency' => $constit,
-			'_RTIR_State' => 'resolved',
+			'_RTIR_State' => $status,
 		},
 	)->store(text => $rttext);
 	print "New ticket's ID is ", $ticket->id, "\n";
