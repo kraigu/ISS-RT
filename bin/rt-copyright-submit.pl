@@ -19,24 +19,14 @@ use ConConn;
 use XML::XPath;
 use Socket;
 use Net::IPv4Addr qw( :all ); # yeah, both this and Socket for gethostbyaddr.
-use vars qw/$opt_f $opt_v $opt_x $opt_h $opt_c/;
-use Getopt::Std;
 
-getopts('f:v:x:hc');
+#output goes to stderr so that it shows up in the procmail logfile
+select STDERR;
 
-my $debug = $opt_v || 0;
-my $sclosed = $opt_c || 0;
-my %config;
+my $debug = 0;
 
-if($opt_h){
-    print "Options: -f(config file), -v(debug), -x(xml file), -c(submit closed)\n";
-    exit 0;
-}
-if($opt_f){
-	%config = ISSRT::ConConn::GetConfig($opt_f);
-} else {
-	%config = ISSRT::ConConn::GetConfig();
-}
+my %config = ISSRT::ConConn::GetConfig();
+
 # Set up Waterloo-specific subnets.
 # This should go into a configuration file.
 my @wirelessnets = ( "129.97.124.0/25","129.97.125.0/25" );
@@ -67,22 +57,19 @@ sub find_c() {
 
 my $inXML = 0;
 my $xmlString = "";
-if ($opt_x){
-   open(FILE, $opt_x);
-   my @output =<FILE>;
-   foreach my $line (@output){
-	if( $line =~ m/<\?xml.*?>/) {
+while(<>){
+	if($inXML != -1 && m/<\?xml.*?>/) {
 		$inXML = 1;
 	}
-	if($line =~ m#</Infringement>#) {
-		$xmlString .= $line;;
-		$inXML = 0;
+	if($inXML != -1 && m#</Infringement>#) {
+		$xmlString .= $_;;
+		$inXML = -1;
 	}
-	if($inXML) {
-		$xmlString .= $line;;
+	if($inXML == 1) {
+		$xmlString .= $_;;
 	}
 }
-}
+
 my ($ch,$ts,$cid,$ip,$dname,$title,$ft,$dv,$fn,$constit) = "";
 
 if($xmlString) {
@@ -139,28 +126,32 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-# Create the ticket.
-my $ticket = RT::Client::REST::Ticket->new(
-	rt => $rt,
-	queue => "Incidents",
-	subject => $subject,
-	cf => {
-		'Risk Severity' => 1,
-		'_RTIR_Classification' => "Copyright",
-		'_RTIR_Constituency' => $constit
-	},
-)->store(text => $rttext);
-my $tid = $ticket->id;
-print "New ticket's ID is $tid\n";
+#make sure the incident has not been already submitted
+my $qstring = qq|
+Queue = 'Incidents'
+AND Subject LIKE 'Copyright% $cid ' 
+|;
 
-if($sclosed){
-	if ($debug > 0){ print "Closing ticket $tid\n"; }
-	# want to set CF.{_RTIR_State} to 'resolved', CF.{_RTIR_Resolution} to 'successfully resolved', and Status to 'resolved'
-	my $ip_in_range = &find_c($ip);
-	if ($constit eq "ResNet" || $ip_in_range eq "Academic-Support"){
-	           my $t = $rt->edit(type => 'ticket', 
-	                             id => $tid, 
-	                             set => { status => 'resolved'}     
-                                    );	
-        }
+my $isrepeat = $rt->search(
+	type => 'ticket',
+	query => $qstring,
+);
+
+
+# Create the ticket.
+unless($isrepeat) {
+	my $ticket = RT::Client::REST::Ticket->new(
+		rt => $rt,
+		queue => "Incidents",
+		subject => $subject,
+		status => 'resolved',
+		cf => {
+			'Risk Severity' => 1,
+			'_RTIR_Classification' => "Copyright",
+			'_RTIR_Constituency' => $constit,
+			'_RTIR_State' => 'resolved',
+		},
+	)->store(text => $rttext);
+	print "New ticket's ID is ", $ticket->id, "\n";
 }
+# Submitted open. Shoot me now.
