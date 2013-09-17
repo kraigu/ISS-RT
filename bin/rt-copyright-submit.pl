@@ -21,6 +21,7 @@ use Socket;
 use Net::IPv4Addr qw( :all ); # yeah, both this and Socket for gethostbyaddr.
 use vars qw/$opt_f $opt_v $opt_x $opt_h $opt_c/;
 use Getopt::Std;
+use MIME::QuotedPrint::Perl;
 
 getopts('f:v:x:hc');
 
@@ -64,6 +65,7 @@ sub find_c() {
 	return "unclassified";
 }
 
+my $quoted = 0;
 my $inXML = 0;
 my $xmlString = "";
 my @output;
@@ -85,7 +87,11 @@ foreach my $line (@output){
 	if($inXML == 1) {
 		$xmlString .= $line;
 	}
+	if($line =~ m/version=3D/) {
+		$quoted = 1;
+	}
 }
+$xmlString = decode_qp($xmlString) if $quoted;
 
 my ($ch,$ts,$cid,$ip,$dname,$title,$ft,$dv,$fn,$constit) = "";
 
@@ -146,7 +152,7 @@ try {
 #make sure the incident has not already been submitted
 my $qstring = qq|
 Queue = 'Incidents'
-AND Subject LIKE 'Copyright% $cid '
+AND Subject LIKE 'Copyright% $cid $ts $ip'
 |;
 
 my $isrepeat = $rt->search(
