@@ -166,7 +166,7 @@ if($sclosed && ($constit eq "ResNet" || $constit eq "Academic-Support")) {
 }
 
 # Create the ticket.
-unless($isrepeat) {
+unless($isrepeat || $cid eq "Unknown CaseID") {
 	my $ticket = RT::Client::REST::Ticket->new(
 		rt => $rt,
 		queue => "Incidents",
