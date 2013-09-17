@@ -75,7 +75,7 @@ if($opt_x) {
 	@output = <STDIN>;
 }
 
-for(@output){
+foreach my $line (@output){
 	if($inXML != -1 && m/<\?xml.*?>/) {
 		$inXML = 1;
 	}
