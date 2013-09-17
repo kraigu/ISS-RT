@@ -75,15 +75,15 @@ if($opt_x) {
 }
 
 foreach my $line (@output){
-	if($inXML != -1 && m/<\?xml.*?>/) {
+	if($inXML != -1 && $line =~ m/<\?xml.*?>/) {
 		$inXML = 1;
 	}
-	if($inXML != -1 && m#</Infringement>#) {
+	if($inXML != -1 && $line =~ m#</Infringement>#) {
 		$xmlString .= $line;
 		$inXML = -1;
 	}
 	if($inXML == 1) {
-		$xmlString .= $_;
+		$xmlString .= $line;
 	}
 }
 
