@@ -39,9 +39,8 @@ if($opt_f){
 }
 # Set up Waterloo-specific subnets.
 # This should go into a configuration file.
-my @wirelessnets = ( "129.97.124.0/25","129.97.125.0/25" );
-my @resnets = ("129.97.224.0/20","129.97.240.0/21","129.97.248.0/22",
-	"129.97.252.0/22","129.97.124.128/25","129.97.125.128/25");
+my @wirelessnets = ( "129.97.124.0/23" );
+my @resnets = ("129.97.131.0/24");
 
 sub resolve() {
 	my $inip = shift;
