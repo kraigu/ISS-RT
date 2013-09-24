@@ -109,7 +109,6 @@ if($xmlString) {
 	$fn = $xp->findvalue("/Infringement/Content/Item/FileName") || "Unknown Filename";
 	$ft = $xp->findvalue("/Infringement/Content/Item/Type") || "Unknown Type";
 	$dv = $xp->findvalue("/Infringement/Source/Deja_Vu") || "DejaVu unset";
-	$ts =~ s/T.*//;
 	$constit = &find_c($ip);
 } else {
 	die "DERP HERP\n";
