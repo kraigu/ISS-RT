@@ -65,77 +65,6 @@ sub find_c() {
 	return "unclassified";
 }
 
-my $quoted = 0;
-my $inXML = 0;
-my $xmlString = "";
-my @output;
-if($opt_x) {
-	open(FILE, $opt_x);
-	@output = <FILE>;
-}else {
-	@output = <STDIN>;
-}
-
-foreach my $line (@output){
-	if($inXML != -1 && $line =~ m/<\?xml.*?>/) {
-		$inXML = 1;
-	}
-	if($inXML != -1 && $line =~ m#</Infringement>#) {
-		$xmlString .= $line;
-		$inXML = -1;
-	}
-	if($inXML == 1) {
-		$xmlString .= $line;
-	}
-	if($line =~ m/version=3D/) {
-		$quoted = 1;
-	}
-}
-$xmlString = decode_qp($xmlString) if $quoted;
-
-my ($ch,$ts,$cid,$ip,$dname,$title,$ft,$dv,$fn,$constit) = "";
-
-if($xmlString) {
-	$xmlString =~ s/(\s)&(\s)/$1&amp;$2/;
-	if($debug > 0) { print "\n--\nxmlstring is:\n . " . Dumper($xmlString) . "\n"; }
-	my $xp = XML::XPath->new(xml => $xmlString);
-	if($debug > 0) { print "\n---\nxp is:\n" . Dumper($xp) . "\n"; }
-	$ch = $xp->findvalue("/Infringement/Complainant/Entity") || "Unknown Entity";
-	$ts = $xp->findvalue("/Infringement/Source/TimeStamp") || "Unknown Timestamp";
-	$cid = $xp->findvalue("/Infringement/Case/ID") || "Unknown CaseID";
-	$ip = $xp->findvalue("/Infringement/Source/IP_Address") || "Unknown IP";
-	$dname = $xp->findvalue("/Infringement/Source/DNS_Name") || &resolve($ip); # this needs better error-checking
-	$title = $xp->findvalue("/Infringement/Content/Item/Title") || "Unknown Title";
-	$fn = $xp->findvalue("/Infringement/Content/Item/FileName") || "Unknown Filename";
-	$ft = $xp->findvalue("/Infringement/Content/Item/Type") || "Unknown Type";
-	$dv = $xp->findvalue("/Infringement/Source/Deja_Vu") || "DejaVu unset";
-	$constit = &find_c($ip);
-} else {
-	die "DERP HERP\n";
-}
-
-my $subject = "Copyright complaint $cid $ts $ip";
-
-my $rttext = qq|
-Entity $ch
-Date $ts
-CaseID $cid
-SourceIP $ip
-FQDN $dname
-Title $title
-Type $ft
-DejaVu $dv
-|;
-
-if($debug > 0){
-	print qq|
-Subject: $subject
-Constituency: $constit
-
-RT Text:
-$rttext
-|;
-}
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
@@ -148,35 +77,113 @@ try {
 	die "problem logging in: ", shift->message;
 };
 
-#make sure the incident has not already been submitted
-my $qstring = qq|
-Queue = 'Incidents'
-AND Subject LIKE 'Copyright% $cid $ts $ip'
-|;
-
-my $isrepeat = $rt->search(
-	type => 'ticket',
-	query => $qstring,
-);
-
-my $status = "open";
-if($sclosed && ($constit eq "ResNet" || $constit eq "Academic-Support")) {
-	$status = "resolved";
+my $quoted = 0;
+my $inXML = 0;
+my $xmlString = "";
+my @notices = ();
+my @output;
+if($opt_x) {
+	open(FILE, $opt_x);
+	@output = <FILE>;
+}else {
+	@output = <STDIN>;
 }
 
-# Create the ticket.
-unless($isrepeat || $cid eq "Unknown CaseID") {
-	my $ticket = RT::Client::REST::Ticket->new(
-		rt => $rt,
-		queue => "Incidents",
-		subject => $subject,
-		status => $status,
-		cf => {
-			'Risk Severity' => 1,
-			'_RTIR_Classification' => "Copyright",
-			'_RTIR_Constituency' => $constit,
-			'_RTIR_State' => $status,
-		},
-	)->store(text => $rttext);
-	print "New ticket's id is ", $ticket->id, "\n";
+foreach my $line (@output){
+	if($line =~ m/<\?xml.*?>/) {
+		$inXML = 1;
+	}
+	if($line =~ m#</Infringement>#) {
+		$xmlString .= $line;
+		$xmlString = decode_qp($xmlString) if $quoted;
+		$inXML = 0;
+		$quoted = 0;
+		push(@notices, $xmlString);
+		$xmlString = "";
+	}
+	if($inXML) {
+		$xmlString .= $line;
+	}
+	if($line =~ m/version=3D/) {
+		$quoted = 1;
+	}
+}
+
+my ($ch,$ts,$cid,$ip,$dname,$title,$ft,$dv,$fn,$constit) = "";
+
+for my $notice (@notices) {
+	if($notice) {
+		$notice =~ s/(\s)&(\s)/$1&amp;$2/;
+		if($debug > 0) { print "\n--\nxmlstring is:\n . " . Dumper($notice) . "\n"; }
+		my $xp = XML::XPath->new(xml => $notice);
+		if($debug > 0) { print "\n---\nxp is:\n" . Dumper($xp) . "\n"; }
+		$ch = $xp->findvalue("/Infringement/Complainant/Entity") || "Unknown Entity";
+		$ts = $xp->findvalue("/Infringement/Source/TimeStamp") || "Unknown Timestamp";
+		$cid = $xp->findvalue("/Infringement/Case/ID") || "Unknown CaseID";
+		$ip = $xp->findvalue("/Infringement/Source/IP_Address") || "Unknown IP";
+		$dname = $xp->findvalue("/Infringement/Source/DNS_Name") || &resolve($ip); # this needs better error-checking
+		$title = $xp->findvalue("/Infringement/Content/Item/Title") || "Unknown Title";
+		$fn = $xp->findvalue("/Infringement/Content/Item/FileName") || "Unknown Filename";
+		$ft = $xp->findvalue("/Infringement/Content/Item/Type") || "Unknown Type";
+		$dv = $xp->findvalue("/Infringement/Source/Deja_Vu") || "DejaVu unset";
+		$constit = &find_c($ip);
+	} else {
+		die "DERP HERP\n";
+	}
+
+	my $subject = "Copyright complaint $cid $ts $ip";
+
+	my $rttext = qq|
+	Entity $ch
+	Date $ts
+	CaseID $cid
+	SourceIP $ip
+	FQDN $dname
+	Title $title
+	Type $ft
+	DejaVu $dv
+	|;
+	
+	if($debug > 0){
+		print qq|
+	Subject: $subject
+	Constituency: $constit
+	
+	RT Text:
+	$rttext
+	|;
+	}
+
+	#make sure the incident has not already been submitted
+	my $qstring = qq|
+	Queue = 'Incidents'
+	AND Subject LIKE 'Copyright% $cid $ts $ip'
+	|;
+
+	my $isrepeat = $rt->search(
+		type => 'ticket',
+		query => $qstring,
+	);
+	
+	my $status = "open";
+	if($sclosed && ($constit eq "ResNet" || $constit eq "Academic-Support")) {
+		$status = "resolved";
+	}
+	
+	# Create the ticket.
+	unless($isrepeat || $cid eq "Unknown CaseID") {
+		my $ticket = RT::Client::REST::Ticket->new(
+			rt => $rt,
+			queue => "Incidents",
+			subject => $subject,
+			status => $status,
+			cf => {
+				'Risk Severity' => 1,
+				'_RTIR_Classification' => "Copyright",
+				'_RTIR_Constituency' => $constit,
+				'_RTIR_State' => $status,
+			},
+		)->store(text => $rttext);
+		print "New ticket's id is ", $ticket->id, "\n";
+	}
 }
