@@ -1,8 +1,5 @@
 #!/usr/bin/env perl
 
-# Probably this could be done more generally by rt-incident-submit.
-# So this is evil cargo-culting of my own code. Whatever, I've got work to do.
-
 use strict;
 use warnings;
 
@@ -41,7 +38,7 @@ if($opt_f){
 # Set up Waterloo-specific subnets.
 # This should go into a configuration file.
 my @wirelessnets = ( "129.97.124.0/23" );
-my @resnets = ("129.97.131.0/24");
+my @resnets = ( "129.97.131.0/24" );
 
 sub resolve() {
 	my $inip = shift;
@@ -64,7 +61,6 @@ sub find_c() {
 	}
 	return "unclassified";
 }
-
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
@@ -139,6 +135,7 @@ for my $notice (@notices) {
 	CaseID $cid
 	SourceIP $ip
 	FQDN $dname
+	Filename $fn
 	Title $title
 	Type $ft
 	DejaVu $dv
