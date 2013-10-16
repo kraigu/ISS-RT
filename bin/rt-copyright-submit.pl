@@ -181,6 +181,6 @@ for my $notice (@notices) {
 				'_RTIR_State' => $status,
 			},
 		)->store(text => $rttext);
-		print "New ticket's id is ", $ticket->id, "\n";
+		print "New ticket's id is ", $ticket->id, "\n" if($debug > 0);
 	}
 }
