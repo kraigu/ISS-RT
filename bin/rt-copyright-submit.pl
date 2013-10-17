@@ -36,9 +36,19 @@ if($opt_f){
 	%config = ISSRT::ConConn::GetConfig();
 }
 # Set up Waterloo-specific subnets.
-# This should go into a configuration file.
-my @wirelessnets = ( "129.97.124.0/23" );
-my @resnets = ( "129.97.131.0/24" );
+my (@wirelessnets, @resnets) = ();
+my $value = $config{"wireless"};
+if(ref($value) eq "ARRAY") {
+	@wirelessnets = @{$value};
+}else {
+	push(@wirelessnets, $value);
+}
+$value = $config{"resnet"};
+if(ref($value) eq "ARRAY") {
+	@resnets = @{$value};
+}else {
+	push(@resnets, $value);
+}
 
 sub resolve() {
 	my $inip = shift;
