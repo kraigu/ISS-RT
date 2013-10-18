@@ -83,12 +83,15 @@ sub submit_ticket() {
 	my $subject = shift;
 	my $constit = shift;
 	my $rt = shift;
+	my $ip = shift;
 
 	my $status = "open";
 	if($sclosed && ($constit eq "ResNet" || $constit eq "Academic-Support" || $constit eq "Tor")) {
 		$status = "resolved";
 	}
-
+	
+	$rttext .= "\nActual Constituency: Wireless" if(ipv4_in_network("129.97.124.0/23", $ip));
+	
 	unless($ignore && ($constit eq "ResNet" || $constit eq "Academic-Support" || $constit eq "Tor")) {
 		my $ticket = RT::Client::REST::Ticket->new(
 			rt => $rt,
@@ -97,7 +100,6 @@ sub submit_ticket() {
 			status => $status,
 			cf => {
 				'Risk Severity' => 1,
-				'_RTIR_Classification' => "REN-ISAC",
 				'_RTIR_Constituency' => $constit,
 				'_RTIR_State' => $status,
 			},
@@ -195,7 +197,7 @@ for(@$incidents) {
 			);
 		}
 	}else {
-		&submit_ticket($rttext, $subject, $constit, $rt);
+		&submit_ticket($rttext, $subject, $constit, $rt, $sip);
 	}
 }
 
