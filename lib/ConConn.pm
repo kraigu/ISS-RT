@@ -30,6 +30,8 @@ sub GetConfig{
 	die "\nNo password!\n" unless $config{password};
 	die "\nNo hostname!\n" unless $config{hostname};
 	die "\nNo username!\n" unless $config{username};
+	die "\nNo wireless networks!\n" unless $config{wireless};
+	die "\nNo resnet!\n" unless $config{resnet};
 	return %config;
 }
 
