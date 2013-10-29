@@ -64,11 +64,11 @@ sub submit_ticket() {
 	my $constit = shift;
 	
 	my $status = "open";
-	if($sclosed && ($constit eq "ResNet" || $constit eq "Academic-Support" || $constit eq "Tor")) {
+	if($sclosed && ($constit eq "ResNet" || $constit eq "Tor")) {
 		$status = "resolved";
 	}
 	
-	unless($ignore && ($constit eq "ResNet" || $constit eq "Academic-Support" || $constit eq "Tor")) {	
+	unless($ignore && ($constit eq "ResNet" || $constit eq "Tor")) {	
 		my $ticket = RT::Client::REST::Ticket->new(
 			rt => $rt,
 			queue => "Incidents",
@@ -164,7 +164,7 @@ try {
 #deal with each incident in the csv
 for my $incident (@$incidents) {
 	my $ip = $incident->{"ip"};
-       	my $rttext;
+	my $rttext;
 	my $date = $incident->{"timestamp"};
 	my $subject = "Shadowserver Report $ip $date";
 	my $constit = &find_c($ip);
