@@ -132,7 +132,7 @@ while(<>) {
 	$encoding = $1 if /Content-Transfer-Encoding:.*(base64)/;
 	$disposition = $1 if /Content-Disposition:.*(attachment)/;
 	if($type && $encoding && $disposition) {
-		chomp($zipped .= $_) if /^[0-9A-z\+\/]+$/;
+		chomp($zipped .= $_) if /^[0-9A-z\+\/=]+$/;
 	}
 }
 
