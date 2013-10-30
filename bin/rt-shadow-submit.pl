@@ -15,7 +15,9 @@ use Net::IPv4Addr qw( :all );
 use vars qw/$opt_f $opt_v $opt_h $opt_c $opt_i/;
 use Getopt::Std;
 use IO::Uncompress::Unzip qw(unzip $UnzipError);
-use MIME::Parser;
+use MIME::Base64;
+use Data::Dumper;
+use LWP::UserAgent;
 
 getopts('f:v:hci');
 
@@ -123,26 +125,28 @@ sub matches_previous() {
 	return $matches;
 }
 
-#retrieve the csv file
-my $parser = new MIME::Parser;
-$parser->output_to_core(1);
-my $email = $parser->parse(\*STDIN);
-
-#assuming there's only one attachment
-my ($part, $report);
-for($email->parts) {
-	$part = $_ if $_->effective_type eq "application/zip";
+my ($type,$encoding,$disposition);
+my $zipped = "";
+while(<>) {
+	$type = $1 if /Content-Type:.*(application)/;
+	$encoding = $1 if /Content-Transfer-Encoding:.*(base64)/;
+	$disposition = $1 if /Content-Disposition:.*(attachment)/;
+	if($type && $encoding && $disposition) {
+		chomp($zipped .= $_) if /^[0-9A-z\+\/]+$/;
+	}
 }
 
-my $decoded = $part->bodyhandle->open("r");
-my $unzip = new IO::Uncompress::Unzip $decoded or die "unzip failed: $UnzipError\n";
+my $decoded = decode_base64($zipped);
 
+open(my $zipfile, '<', \$decoded);
+my $unzip = new IO::Uncompress::Unzip $zipfile or die "unzip failed: $UnzipError\n";
+
+my $report = "";
 until($unzip->eof) {
 	$report .= $unzip->getline;
 }
 
 print $report if $debug > 0;
-
 my $io = IO::String->new($report);
 
 #parse the csv
