@@ -13,15 +13,15 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/$opt_s $opt_f $opt_h/;
+use vars qw/$opt_s $opt_f $opt_h $opt_t/;
 use Getopt::Std;
 
-getopts('s:f:h');
+getopts('s:f:ht:');
 my %config;
 my $ticket;
 
 if($opt_h){
-     print "Options: -s(Search string), -f(config file)\n";
+     print "Options: -s(Search string), -f(config file), -t(timeout)\n";
      exit 0;
 }
 if($opt_f){
@@ -29,9 +29,10 @@ if($opt_f){
 } else {
 	%config = ISSRT::ConConn::GetConfig();
 }
+
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
-	timeout => 30,
+	timeout => $opt_t || 30,
 );
 
 try {
