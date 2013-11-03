@@ -21,10 +21,10 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_c $opt_l $opt_C $opt_L $opt_V $opt_v $opt_h $opt_f/;
+use vars qw/ $opt_s $opt_e $opt_c $opt_l $opt_C $opt_L $opt_V $opt_v $opt_h $opt_f $opt_t/;
 use Getopt::Std;
 
-getopts('s:e:f:v:clCLVh');
+getopts('s:e:f:v:t:clCLVh');
 my $debug = $opt_v || 0;
 
 my ($ticket,$checkmonth);
@@ -41,13 +41,16 @@ if($opt_f){
 if($opt_s && $opt_e){
 	$lm = $opt_s;
 	$nm = $opt_e	
-}elsif ($opt_s && (!$opt_e)){
+} elsif ($opt_s && (!$opt_e)){
 	$lm = $opt_s;
 	$nm = UnixDate("today","%Y-%m-%d");
-}elsif((!$opt_s) && (!$opt_e)){	
+} elsif((!$opt_s) && (!$opt_e)){	
 	$lm = UnixDate("-1m","%Y-%m-01");
 	$nm = UnixDate("today","%Y-%m-01");
 }
+
+# check for a timeout value
+my $timeout = $opt_t || 30;
 
 my $qstring = qq|
 Queue = 'Incidents'
@@ -60,7 +63,7 @@ AND Status != 'rejected'
 
 my $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
-	timeout => 30,
+	timeout => $timeout,
 );
 
 try {
@@ -70,7 +73,7 @@ try {
 };
 
 if($opt_h){
-	print "Available options: -s (start-date),  -e (end-date), -c (include Copyright), -l (include LE request), -C (Copyright only), -L (LE request only), -V (verbose report), -v (enable debugging)\n";
+	print "Available options: -s (start-date),  -e (end-date), -c (include Copyright), -l (include LE request), -C (Copyright only), -L (LE request only), -V (verbose report), -v (enable debugging) -t (timeout)\n";
 	print "If no dates are given, assume the previous calendar month. If only a start date is given, assume the current date as the end date\n";
 	exit 0;
 }
