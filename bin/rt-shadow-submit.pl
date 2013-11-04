@@ -12,24 +12,26 @@ use Text::CSV;
 use IO::String;
 use ConConn;
 use Net::IPv4Addr qw( :all );
-use vars qw/$opt_f $opt_v $opt_h $opt_c $opt_i/;
+use vars qw/$opt_f $opt_v $opt_h $opt_i $opt_t $opt_o/;
 use Getopt::Std;
 use IO::Uncompress::Unzip qw(unzip $UnzipError);
 use MIME::Base64;
 use Data::Dumper;
 use LWP::UserAgent;
 
-getopts('f:v:hci');
+getopts('f:v:hit:o:');
 
 my $rt;
 
 my $debug = $opt_v || 0;
-my $sclosed = $opt_c || 0;
 my $ignore = $opt_i || 0;
 my %config;
 
+my $mailsubject = "No subject";
+
 if($opt_h) {
-	print "Options: -f(config file), -v(debug), -c(submit closed), -i(ignore lesser networks)\n";
+	print "Options: -f(config file), -v(verbose/debug), -i(ignore wireless/resnet networks) -t(timeout)\n";
+	print "-o (output file for debugging, implies -v 1000)\n"; #probably should just redirect STDERR/STDOUT?
 	exit 0;
 }
 if($opt_f) {
@@ -38,49 +40,44 @@ if($opt_f) {
 	%config = ISSRT::ConConn::GetConfig();
 }
 
-#configure the Waterloo specific subnets
+if($opt_o) {
+	$opt_v = 1000;
+	open(OUTPUTFILE, ">>", "$opt_o") || die "Cannot open output file: $!";
+}
+
+#configure the Waterloo specific networks
 my (@wirelessnets, @resnets, @tor) = ();
 my $value = $config{"wireless"};
 if(ref($value) eq "ARRAY") {
 	@wirelessnets = @{$value};
-}else {
+} else {
 	push(@wirelessnets, $value);
 }
 $value = $config{"resnet"};
 if(ref($value) eq "ARRAY") {
 	@resnets = @{$value};
-}else {
+} else {
 	push(@resnets, $value);
 }
 $value = $config{"tor"};
 if(ref($value) eq "ARRAY") {
 	@tor = @{$value};
-}else {
+} else {
 	push(@tor, $value);
 }
-
 
 sub submit_ticket() {
 	my $rttext = shift;
 	my $subject = shift;
 	my $constit = shift;
 	
-	my $status = "open";
-	if($sclosed && ($constit eq "ResNet" || $constit eq "Tor")) {
-		$status = "resolved";
-	}
-	
-	unless($ignore && ($constit eq "ResNet" || $constit eq "Tor")) {	
+	unless($ignore && ($constit eq "ResNet" || $constit eq "Wireless")) {	
 		my $ticket = RT::Client::REST::Ticket->new(
 			rt => $rt,
-			queue => "Incidents",
+			queue => "Incident Reports",
 			subject => $subject,
-			status => $status,
 			cf => {
-				'Risk Severity' => 1,
-				'_RTIR_Classification' => "Shadowserver",
 				'_RTIR_Constituency' => $constit,
-				'_RTIR_State' => $status,
 			},
 		)->store(text => $rttext);
 		print "New ticket's id is ", $ticket->id, "\n" if($debug > 0);
@@ -92,7 +89,7 @@ sub find_c() {
 	print("find_c inip was $inip\n") if($debug > 0);
 	foreach my $net (@wirelessnets) {
 		if(ipv4_in_network($net, $inip)) {
-			return "Academic-Support";
+			return "Wireless";
 		}
 	}
 	foreach my $net (@resnets) {
@@ -108,26 +105,20 @@ sub find_c() {
 	return "unclassified";
 }
 
-#checks if incident related to an ip has already been reported
-sub matches_previous() {
-	my $parent_id = shift;
-	my $date = shift;
-	my @attachments = $rt->get_attachment_ids(id => $parent_id);
-	my $matches = 0;
-
-	return 1 if $rt->show(type => 'ticket', id => $parent_id)->{"Subject"} =~ /$date/;
-
-	for(@attachments) {
-		my $attachment = $rt->get_attachment(parent_id => $parent_id, id => $_);
-		$matches = 1 if($attachment->{"Content"} =~ /timestamp:.*$date/);
-	}
-
-	return $matches;
-}
+### begin main body
 
 my ($type,$encoding,$disposition);
 my $zipped = "";
 while(<>) {
+	if($opt_o){
+		print OUTPUTFILE "$_";
+	}
+	if (/^(Subject:)(.*)/){
+		$mailsubject = $2;
+		if($opt_o){
+			print OUTPUTFILE "SUBJECT FOUND: $mailsubject\n";
+		}
+	}
 	$type = $1 if /Content-Type:.*(application)/;
 	$encoding = $1 if /Content-Transfer-Encoding:.*(base64)/;
 	$disposition = $1 if /Content-Disposition:.*(attachment)/;
@@ -146,7 +137,9 @@ until($unzip->eof) {
 	$report .= $unzip->getline;
 }
 
-print $report if $debug > 0;
+if($opt_o){
+	print OUTPUTFILE "\n$report\n";
+}
 my $io = IO::String->new($report);
 
 #parse the csv
@@ -156,7 +149,7 @@ my $incidents = $csv->getline_hr_all($io);
 
 $rt = RT::Client::REST->new(
 	server => 'https://' . $config{hostname},
-	timeout => 30,
+	timeout => $opt_t || 30,
 );
 
 try {
@@ -170,30 +163,18 @@ for my $incident (@$incidents) {
 	my $ip = $incident->{"ip"};
 	my $rttext;
 	my $date = $incident->{"timestamp"};
-	my $subject = "Shadowserver Report $ip $date";
+	my $subject = "$mailsubject $ip $date";
 	my $constit = &find_c($ip);
-	my $qstring = qq|
-	Queue = 'Incidents'
-	AND Subject LIKE '%Shadowserver%$ip%'|;
 
-	my @matches = $rt->search(
-		type => 'ticket',
-		query => $qstring,
-	);
+	# We never want to put Tor incidents into our database.
+	next if $constit eq "Tor";
 
 	for(keys %$incident) {
 		$rttext .= "$_: ".$incident->{$_}."\n";
 	}
-
-	if(@matches) {
-		unless(&matches_previous($matches[0], $date)){
-			$rt->comment(
-				ticket_id => shift @matches,
-				message => $rttext,
-			);
-		}
-	}else {
-		&submit_ticket($rttext, $subject, $constit);
-	}
+	&submit_ticket($rttext, $subject, $constit);
 }
 
+if($opt_o){
+	close(OUTPUTFILE);
+}
