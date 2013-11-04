@@ -7,8 +7,11 @@ use warnings;
 
 use Config::General;
 use Data::Dumper;
+use Net::IPv4Addr qw( :all );
 
 my $debug = 0;
+
+my (@wirelessnets, @resnets, @tor) = ();
 
 sub GetConfig{
 	my $configfile = qq|$ENV{"HOME"}/.rtrc|;
@@ -32,6 +35,11 @@ sub GetConfig{
 	die "\nNo username!\n" unless $config{username};
 	die "\nNo wireless networks!\n" unless $config{wireless};
 	die "\nNo resnet!\n" unless $config{resnet};
+
+	push(@wirelessnets, &deref($config{"wireless"}));
+	push(@resnets, &deref($config{"resnet"}));
+	push(@tor, &deref($config{"tor"}));
+
 	return %config;
 }
 
@@ -50,6 +58,35 @@ sub getSID{
         open(FILE, $configfile);
         my @output =<FILE>;
         return @output;
+}
+
+sub deref{
+	my $value = shift;
+	if(ref($value) eq "ARRAY"){
+		return @{$value};
+	}
+	return $value;
+}
+
+sub getConstituency{
+	my $inip = shift;
+	print("initial ip was $inip\n") if($debug > 0);
+	foreach my $net (@wirelessnets){
+		if(ipv4_in_network($net, $inip)){
+			return "Wireless";
+		}
+	}
+	foreach my $net (@resnets){
+		if(ipv4_in_network($net, $inip)){
+			return "ResNet";
+		}
+	}
+	foreach my $net (@tor){
+		if(ipv4_in_network($net, $inip)){
+			return "Tor";
+		}
+	}
+	return "unclassified";
 }
 
 1;
