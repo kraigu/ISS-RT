@@ -109,15 +109,20 @@ sub find_c() {
 
 my ($type,$encoding,$disposition);
 my $zipped = "";
+my $insubject = 0;
 while(<>) {
 	if($opt_o){
 		print OUTPUTFILE "$_";
 	}
+	if(/^(Date:)|(To:)|(From:)/ || /^$/) {
+		$insubject = 0;
+	}
+	if($insubject) {
+		$mailsubject .= $_;
+	}
 	if (/^(Subject:)(.*)/){
 		$mailsubject = $2;
-		if($opt_o){
-			print OUTPUTFILE "SUBJECT FOUND: $mailsubject\n";
-		}
+		$insubject = 1;
 	}
 	$type = $1 if /Content-Type:.*(application)/;
 	$encoding = $1 if /Content-Transfer-Encoding:.*(base64)/;
@@ -125,6 +130,13 @@ while(<>) {
 	if($type && $encoding && $disposition) {
 		chomp($zipped .= $_) if /^[0-9A-z\+\/=]+$/;
 	}
+}
+
+# trim whitespace
+$mailsubject =~ s/^\s+//;
+$mailsubject =~ s/\s+$//;
+if($opt_o) {
+	print OUTPUTFILE "SUBJECT FOUND: $mailsubject\n";
 }
 
 my $decoded = decode_base64($zipped);
