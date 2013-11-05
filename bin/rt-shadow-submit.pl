@@ -66,7 +66,7 @@ if(ref($value) eq "ARRAY") {
 	push(@tor, $value);
 }
 
-sub submit_ticket() {
+sub submit_ticket {
 	my $rttext = shift;
 	my $subject = shift;
 	my $constit = shift;
@@ -84,7 +84,7 @@ sub submit_ticket() {
 	}
 }	
 
-sub find_c() {
+sub find_c {
 	my $inip = shift;
 	print("find_c inip was $inip\n") if($debug > 0);
 	foreach my $net (@wirelessnets) {
