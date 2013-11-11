@@ -114,7 +114,7 @@ while(<>) {
 	if($opt_o){
 		print OUTPUTFILE "$_";
 	}
-	if(/^(Date:)|(To:)|(From:)/ || /^$/) {
+	if(/^\w:/ || /^$/) {
 		$insubject = 0;
 	}
 	if($insubject) {
