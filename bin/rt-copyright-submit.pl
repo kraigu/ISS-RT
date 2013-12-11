@@ -19,6 +19,7 @@ use Net::IPv4Addr qw( :all ); # yeah, both this and Socket for gethostbyaddr.
 use vars qw/$opt_f $opt_v $opt_x $opt_h $opt_c/;
 use Getopt::Std;
 use MIME::QuotedPrint::Perl;
+use File::Temp qw/ tempfile /;
 
 getopts('f:v:x:hc');
 
@@ -95,7 +96,9 @@ if($opt_x) {
 	@output = <STDIN>;
 }
 
+my ($tmp, $attachment) = tempfile(SUFFIX => ".txt");
 foreach my $line (@output){
+	print $tmp $line;
 	if($line =~ m/<\?xml.*?>/) {
 		$inXML = 1;
 	}
@@ -114,6 +117,7 @@ foreach my $line (@output){
 		$quoted = 1;
 	}
 }
+close($tmp) || warn "close failed, attachment may not be submitted: $!";
 
 my ($ch,$ts,$cid,$ip,$dname,$title,$ft,$dv,$fn,$constit) = "";
 
@@ -191,6 +195,7 @@ for my $notice (@notices) {
 				'_RTIR_State' => $status,
 			},
 		)->store(text => $rttext);
+		$ticket->comment(message => "original complaint", attachments => [$attachment]);
 		print "New ticket's id is ", $ticket->id, "\n" if($debug > 0);
 	}
 }
