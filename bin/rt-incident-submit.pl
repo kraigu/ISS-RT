@@ -16,7 +16,8 @@ use ConConn;
 use Scalar::Util qw(looks_like_number);
 use Getopt::Long;
 
-my ($opt_s, $opt_i, $opt_p, $opt_f, $opt_v, $opt_h, $opt_cl, $opt_co, $classification, $constituency);
+my ($opt_s, $opt_i, $opt_p, $opt_f, $opt_v, $opt_h, $opt_cl, $opt_co, $opt_r, $classification, $constituency);
+my $queue = 'Incidents';
 
 GetOptions ("s=s" => \$opt_s,
             "i=s" => \$opt_i, 
@@ -25,6 +26,7 @@ GetOptions ("s=s" => \$opt_s,
             "v=s" => \$opt_v, 
             "cl=s" => \$opt_cl, 
             "co=s" => \$opt_co,
+            "r" => \$opt_r,
             "h" => \$opt_h,       
 );  
             
@@ -32,7 +34,17 @@ my $debug = $opt_v || 0;
 my %config;
 
 if($opt_h){
-  print "Options: -s (Subject), -i (File name), -p (priority), -f (Config file), -cl (Classification), -co (constituency), -v(Verbosity)\n";
+  print <<EOH;
+$0 options:
+\t-s subject (required)
+\t-i file name (required)
+\t-p priority (optional, defaults to 3)
+\t-f config file (optional, defaults to ~/.rtrc)
+\t-cl classification (optional)
+\t-co constituency (optional)
+\t-r submit an incident report instead of an incident (optional)
+\t-v verbosity
+EOH
   exit 0;
 }
 if($opt_f){
@@ -69,9 +81,11 @@ try {
 $classification =  $opt_cl || '';
 $constituency =   $opt_co || 'EDUNET';
 
+$queue = 'Incident Reports' if($opt_r);
+
 my $ticket = RT::Client::REST::Ticket->new(
 	rt => $rt,
-	queue => "Incidents",
+	queue => $queue,
 	subject => $subject,
 	cf => {
 		'Risk Severity' => $pri,
