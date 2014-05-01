@@ -19,7 +19,7 @@ use MIME::Base64;
 use Data::Dumper;
 use LWP::UserAgent;
 
-getopts('f:v:hit:o:n:');
+getopts('f:v:hit:o:n');
 
 my $rt;
 
