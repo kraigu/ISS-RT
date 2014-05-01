@@ -12,25 +12,32 @@ use Text::CSV;
 use IO::String;
 use ConConn;
 use Net::IPv4Addr qw( :all );
-use vars qw/$opt_f $opt_v $opt_h $opt_i $opt_t $opt_o/;
+use vars qw/$opt_f $opt_v $opt_h $opt_i $opt_t $opt_o $opt_n/;
 use Getopt::Std;
 use IO::Uncompress::Unzip qw(unzip $UnzipError);
 use MIME::Base64;
 use Data::Dumper;
 use LWP::UserAgent;
 
-getopts('f:v:hit:o:');
+getopts('f:v:hit:o:n:');
 
 my $rt;
 
 my $debug = $opt_v || 0;
 my $ignore = $opt_i || 0;
+my $ignorenoisy = $opt_n || 0;
+
 my %config;
 
 my $mailsubject = "No subject";
 
+my @noisysubjects = (
+	"Shadowserver University of Waterloo QOTD Report",
+	"Shadowserver University of Waterloo NTP Report"
+);
+
 if($opt_h) {
-	print "Options: -f(config file), -v(verbose/debug), -i(ignore wireless/resnet networks) -t(timeout)\n";
+	print "Options: -f(config file), -v(verbose/debug), -i(ignore wireless/resnet networks) -t(timeout) -n(skip noisy subjects)\n";
 	print "-o (output file for debugging, implies -v 1000)\n"; #probably should just redirect STDERR/STDOUT?
 	exit 0;
 }
@@ -139,6 +146,20 @@ if($opt_o) {
 	print OUTPUTFILE "SUBJECT FOUND: $mailsubject\n";
 }
 
+# Some subjects signal that they contain reports that are just too noisy.
+# eg, thank you, Shadowserver, for deciding for me that any NTP server is unacceptable.
+# Similarly, QOTD is pretty noisy too.
+if ($ignorenoisy){
+	foreach (@noisysubjects){
+		if ($mailsubject =~ /$_/){
+			if($opt_o){
+				print OUTPUTFILE "SUBJECT IS TOO NOISY, EXITING\n";
+				exit 1;
+			}
+		}
+	}
+}
+
 my $decoded = decode_base64($zipped);
 
 open(my $zipfile, '<', \$decoded);
@@ -187,6 +208,8 @@ for my $incident (@$incidents) {
 	&submit_ticket($rttext, $subject, $constit);
 }
 
-if($opt_o){
-	close(OUTPUTFILE);
+END {
+	if($opt_o){
+		close(OUTPUTFILE);
+	}
 }
