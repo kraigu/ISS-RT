@@ -33,7 +33,8 @@ my $mailsubject = "No subject";
 
 my @noisysubjects = (
 	"Shadowserver University of Waterloo QOTD Report",
-	"Shadowserver University of Waterloo NTP Report"
+	"Shadowserver University of Waterloo NTP Report",
+	"Shadowserver University of Waterloo NTP Version Report"
 );
 
 if($opt_h) {
