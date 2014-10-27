@@ -42,6 +42,7 @@ BSD-new.
 Authors
 -------
 
-Mike Patterson, Waterloo IST ISS <mike.patterson@uwaterloo.ca>
-Cheng Jie Shi, Winter 2013 IST ISS Co-Op <cjshi@uwaterloo.ca>
-Davidson Marshall, Fall 2013 IST ISS Co-Op <damarsha@uwaterloo.ca>
+* Mike Patterson, Waterloo IST ISS <mike.patterson@uwaterloo.ca>
+* Cheng Jie Shi, Winter 2013 IST ISS Co-Op <cjshi@uwaterloo.ca>
+* Davidson Marshall, Fall 2013 IST ISS Co-Op <damarsha@uwaterloo.ca>
+* Mark Gaulton, Waterloo IST ISS <mark.gaulton@uwaterloo.ca>
