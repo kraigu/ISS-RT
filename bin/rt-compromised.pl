@@ -5,6 +5,8 @@
 # Mike Patterson <mike.patterson@uwaterloo.ca>
 # in his guise as IST-ISS staff member, Oct 2012
 
+# todo add a month-by-month option
+
 use strict;
 use warnings;
 
@@ -17,17 +19,17 @@ use RT::Client::REST;
 use Error qw|:try|;
 use Date::Manip;
 use ConConn;
-use vars qw/ $opt_s $opt_e $opt_c $opt_f $opt_v $opt_h $opt_x/;
+use vars qw/$opt_s $opt_e $opt_c $opt_f $opt_v $opt_h $opt_x $opt_S/;
 use Getopt::Std;
 
-getopts('s:e:c:f:v:hx');
+getopts('s:e:c:f:v:hxS');
 
 my $debug = $opt_v || 0;
 my ($ticket,$checkmonth,%config);
 my (%classifications,%constituencies);
 
 if($opt_h){
-   print "Options: -s(start-date),-e(end-date), -c(constituency),-f(config file), -x (HTML), -v(debug)\n";
+   print "Options: -s(start-date),-e(end-date), -c(constituency),-f(config file), -x (HTML), -v(debug), -S(Summary only)\n";
    exit 0;
 }
 
@@ -69,7 +71,7 @@ my @ids = $rt->search(
 	query => $qstring
 );
 
-if($debug > 0){	print scalar @ids . " incidents\n"; }
+if($debug > 0){ print scalar @ids . " incidents\n"; }
 if($debug > 1){	print Dumper(@ids); }
 
 if($opt_x){
@@ -86,10 +88,13 @@ if($opt_x){
 |;
 }
 
+my $cnt = 0;
 for my $id (@ids) {
 	# show() returns a hash reference
 	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
 	next if($ticket->{'CF.{_RTIR_State}'} eq 'abandoned'); # RT is stupid and SQL statement can't exclude state?
+	$cnt++;
+	next if($opt_S); # If we're only summarising, don't care about the rest
 	my $conskey = $ticket->{'CF.{_RTIR_Constituency}'};
 	$constituencies{$conskey} ||= 0;
 	$constituencies{$conskey} += 1;
@@ -107,7 +112,7 @@ for my $id (@ids) {
 	}
 }
 
-my $msgtxt="RT Compromised Accounts report for $lm to $nm\n";
+my $msgtxt="RT Compromised Accounts report for $lm to $nm - total $cnt\n";
 
 if($opt_x){
 	print qq|</table><p>$msgtxt</p>|;
@@ -116,4 +121,3 @@ if($opt_x){
 	print "$constituencies{$_}\t$_\n" for sort 
  		{ $constituencies{$b} <=> $constituencies{$a} } keys %constituencies;
 }
-
