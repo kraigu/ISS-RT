@@ -56,8 +56,8 @@ my $qstring = qq|
 Queue = 'Incidents'
 AND Created > '$lm'
 AND Created < '$nm'
-AND CF.{_RTIR_Classification} != 'Question Only'
-AND CF.{_RTIR_Resolution} != 'abandoned'
+AND CF.{Classification} != 'Question Only'
+AND CF.{Resolution} != 'abandoned'
 AND Status != 'rejected'
 |;
 
@@ -80,29 +80,29 @@ if($opt_h){
 
 #-l include 'LE Request'
 if($opt_l && (!$opt_c) && (!$opt_L) && (!$opt_C)){
-	$qstring .= qq|AND CF.{_RTIR_Classification} != 'Copyright'|; 
+	$qstring .= qq|AND CF.{Classification} != 'Copyright'|; 
 }#-c include 'Copyright'
 elsif((!$opt_l) && $opt_c && (!$opt_L) && (!$opt_C)){
-	$qstring .= qq|AND CF.{_RTIR_Classification} != 'LE request'|;
+	$qstring .= qq|AND CF.{Classification} != 'LE request'|;
 }#-c -l include 'Copyright' and 'LE Request'
 elsif($opt_l && $opt_c && (!$opt_L) && (!$opt_C)){
 	#do nothing
 }#ouput for no options given. default to print anything other than 'LE Request' and 'Copyright'
 elsif((!$opt_l) && (!$opt_c) && (!$opt_L) && (!$opt_C)){
-	$qstring .= qq|AND CF.{_RTIR_Classification} != 'LE request' AND CF.{_RTIR_Classification} != 'Copyright'|;
+	$qstring .= qq|AND CF.{Classification} != 'LE request' AND CF.{Classification} != 'Copyright'|;
 }#-L include ONLY 'LE Request'
 elsif((!$opt_l) && (!$opt_c) && $opt_L && (!$opt_C)){
-	$qstring .= qq|AND CF.{_RTIR_Classification} = 'LE request'|;
+	$qstring .= qq|AND CF.{Classification} = 'LE request'|;
 }#-C include ONLY 'Copyright'
 elsif((!$opt_l) && (!$opt_c) && (!$opt_L) && $opt_C){
-	$qstring .= qq|AND CF.{_RTIR_Classification} = 'Copyright'|;
+	$qstring .= qq|AND CF.{Classification} = 'Copyright'|;
 }#-C -L
 elsif((!$opt_l) && (!$opt_c) && $opt_L && $opt_C){
  	$qstring .= qq|
 AND(
-	CF.{_RTIR_Classification} = 'LE request'
+	CF.{Classification} = 'LE request'
 	OR
-	CF.{_RTIR_Classification} = 'Copyright'
+	CF.{Classification} = 'Copyright'
 )
 |;
 }
@@ -124,8 +124,8 @@ if($opt_V) {
 	for my $id (@ids) {
 		# show() returns a hash reference
 		my ($ticket) = $rt->show(type=>'ticket',id=>$id);
-		my $classif = $ticket->{'CF.{_RTIR_Classification}'} || "Unclassified";
-		my $constit = $ticket->{'CF.{_RTIR_Constituency}'};
+		my $classif = $ticket->{'CF.{Classification}'} || "Unclassified";
+		my $constit = $ticket->{'CF.{Constituency}'};
 		my $subj = $ticket->{'Subject'};
 		my $tickdate = $ticket->{'Created'};
 		print qq|"$id","$tickdate","$classif","$constit","$subj"\n|;
@@ -138,9 +138,10 @@ if($opt_V) {
 	for my $id (@ids) {
 		# show() returns a hash reference
 		my ($ticket) = $rt->show(type=>'ticket',id=>$id);
-		next if($ticket->{'CF.{_RTIR_State}'} eq 'abandoned'); # RT is stupid and SQL statement can't exclude state?
-		my $classkey = $ticket->{'CF.{_RTIR_Classification}'};
-		my $conskey = $ticket->{'CF.{_RTIR_Constituency}'};
+		if ($debug > 1){ print $ticket; }
+		next if($ticket->{'Status'} eq 'abandoned'); # RT is stupid and SQL statement can't exclude state?
+		my $classkey = $ticket->{'CF.{Classification}'};
+		my $conskey = $ticket->{'CF.{Constituency}'};
 		$classifications{$classkey} ||= 0;
 		$classifications{$classkey} += 1; # hurray for mr cout
 		$constituencies{$conskey} ||= 0;

@@ -86,7 +86,7 @@ sub submit_ticket {
 			queue => "Incident Reports",
 			subject => $subject,
 			cf => {
-				'_RTIR_Constituency' => $constit,
+				'Constituency' => $constit,
 			},
 		)->store(text => $rttext);
 		print "New ticket's id is ", $ticket->id, "\n" if($debug > 0);

@@ -58,11 +58,11 @@ my $qstring = qq|
 Queue = 'Incidents'
 AND Created > '$lm'
 AND Created < '$nm'
-AND CF.{_RTIR_Resolution} != 'abandoned'
-AND CF.{_RTIR_Classification} = 'Compromised User Credentials'
+AND CF.{Resolution} != 'abandoned'
+AND CF.{Classification} = 'Compromised User Credentials'
 |;
 if ($const){
-	$qstring = $qstring . " AND CF.{_RTIR_Constituency} = '$const'"
+	$qstring = $qstring . " AND CF.{Constituency} = '$const'"
 }
 if($debug > 0){ print "Query string\n$qstring\n"; }
 
@@ -92,10 +92,10 @@ my $cnt = 0;
 for my $id (@ids) {
 	# show() returns a hash reference
 	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
-	next if($ticket->{'CF.{_RTIR_State}'} eq 'abandoned'); # RT is stupid and SQL statement can't exclude state?
+	next if($ticket->{'Status'} eq 'abandoned'); # RT is stupid and SQL statement can't exclude state?
 	$cnt++;
 	next if($opt_S); # If we're only summarising, don't care about the rest
-	my $conskey = $ticket->{'CF.{_RTIR_Constituency}'};
+	my $conskey = $ticket->{'CF.{Constituency}'};
 	$constituencies{$conskey} ||= 0;
 	$constituencies{$conskey} += 1;
 	my $pwned = $ticket->{'CF.{Userid}'} || 'Unset';

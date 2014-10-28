@@ -49,7 +49,7 @@ my $searchstr = $opt_s || die "No search string given\n";
 
 my $qstring = qq|
 Queue = 'Incidents'
-AND 'CF.{_RTIR_Description}' LIKE '%$searchstr%'
+AND 'CF.{Description}' LIKE '%$searchstr%'
 |;
 if($debug > 0){ print "Query string\n$qstring\n"; }
 
@@ -67,7 +67,7 @@ for my $id (@ids) {
 	my ($ticket) = $rt->show(type=>'ticket',id=>$id);
 	if($debug > 1){ print Dumper($ticket); }
 	my $subj = $ticket->{'Subject'};
-	my $desc = $ticket->{'CF.{_RTIR_Description}'};
+	my $desc = $ticket->{'CF.{Description}'};
 	my $created = $ticket->{'Created'};
 	print "ID: $id\tSubject: $subj\tDescription: $desc\tCreated: $created\n";
 }

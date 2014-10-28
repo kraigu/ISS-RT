@@ -71,9 +71,9 @@ for my $id (@ids) {
 	if($debug > 0) {
 		print Dumper($ticket);
 	}
-	my $class = $ticket->{'CF.{_RTIR_Classification}'};
+	my $class = $ticket->{'CF.{Classification}'};
 	my $subj = $ticket->{'Subject'};
-	my $state = $ticket->{'CF.{_RTIR_State}'};
+	my $state = $ticket->{'Status'};
 	my $cdate = $ticket->{'Created'};
 	my $rdate = $ticket->{'Resolved'} || 'Still open';
 	my $queue = $ticket->{'Queue'};

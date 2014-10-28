@@ -190,9 +190,8 @@ for my $notice (@notices) {
 			status => $status,
 			cf => {
 				'Risk Severity' => 1,
-				'_RTIR_Classification' => "Copyright",
-				'_RTIR_Constituency' => $constit,
-				'_RTIR_State' => $status,
+				'Classification' => "Copyright",
+				'Constituency' => $constit,
 			},
 		)->store(text => $rttext);
 		$ticket->comment(message => "original complaint", attachments => [$attachment]);

@@ -61,7 +61,7 @@ die "$ipsearch doesn't look like an IPv4 address\n" unless $ipsearch =~ /^(?:[0-
 
 my $qstring = qq|
 (Queue = 'Incidents' OR Queue = 'Investigations')
-AND CF.{_RTIR_IP} = '$ipsearch'
+AND CF.{IP} = '$ipsearch'
 |;
 if($debug > 0){ print "Query string\n$qstring\n"; }
 
@@ -80,10 +80,10 @@ for my $id (@ids) {
 	if($debug > 0) {
 		print Dumper($ticket);
 	}
-	my $class = $ticket->{'CF.{_RTIR_Classification}'} || 'none';
-	my $ipl = $ticket->{'CF.{_RTIR_IP}'};
+	my $class = $ticket->{'CF.{Classification}'} || 'none';
+	my $ipl = $ticket->{'CF.{IP}'};
 	my $subj = $ticket->{'Subject'};
-	my $state = $ticket->{'CF.{_RTIR_State}'};
+	my $state = $ticket->{'Status'};
 	if ($opt_o){
 	    if($state eq "open"){
             print 1;
@@ -96,7 +96,7 @@ for my $id (@ids) {
 	my $queue = $ticket->{'Queue'};
 	my $cdate = $ticket->{'Created'};
 	my $rdate = $ticket->{'Resolved'} || '';
-	my $rreason = $ticket->{'CF.{_RTIR_Resolution}'} || '';
+	my $rreason = $ticket->{'CF.{Resolution}'} || '';
 	print "$queue ID: $id ($state)\nCreated: $cdate\n$subj\nClassification: $class";
 	if($rdate){ print "\nResolved: $rreason\t$rdate"; }
 	print "\nIP List:\n$ipl\n\n";

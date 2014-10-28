@@ -89,8 +89,8 @@ my $ticket = RT::Client::REST::Ticket->new(
 	subject => $subject,
 	cf => {
 		'Risk Severity' => $pri,
-		'_RTIR_Classification' => $classification,
-		'_RTIR_Constituency' => $constituency
+		'Classification' => $classification,
+		'Constituency' => $constituency
 	},	
 )->store(text => $rttext);
 print "New ticket's ID is ", $ticket->id, "\n";

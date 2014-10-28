@@ -100,8 +100,7 @@ sub submit_ticket() {
 			status => $status,
 			cf => {
 				'Risk Severity' => 1,
-				'_RTIR_Constituency' => $constit,
-				'_RTIR_State' => $status,
+				'Constituency' => $constit,
 			},
 		)->store(text => $rttext);
 	}
