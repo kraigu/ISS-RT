@@ -62,7 +62,7 @@ sub find_c() {
 	if($debug > 0){ print ("find_c inip was $inip\n"); }
 	foreach my $net (@wirelessnets){
 		if( ipv4_in_network($net,$inip) ){
-			return "Academic-Support";
+			return "Academic Support";
 		}
 	}
 	foreach my $net (@resnets){
