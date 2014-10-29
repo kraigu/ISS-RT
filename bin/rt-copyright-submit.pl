@@ -177,7 +177,7 @@ for my $notice (@notices) {
 	);
 	
 	my $status = "open";
-	if($sclosed && ($constit eq "ResNet" || $constit eq "Academic-Support")) {
+	if($sclosed && ($constit eq "ResNet" || $constit eq "Academic Support")) {
 		$status = "resolved";
 	}
 	
