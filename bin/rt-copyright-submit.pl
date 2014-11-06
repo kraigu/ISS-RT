@@ -176,18 +176,12 @@ for my $notice (@notices) {
 		query => $qstring,
 	);
 	
-	my $status = "open";
-	if($sclosed && ($constit eq "ResNet" || $constit eq "Academic Support")) {
-		$status = "resolved";
-	}
-	
 	# Create the ticket.
 	unless($isrepeat || $cid eq "Unknown CaseID") {
 		my $ticket = RT::Client::REST::Ticket->new(
 			rt => $rt,
 			queue => "Incidents",
 			subject => $subject,
-			status => $status,
 			cf => {
 				'Risk Severity' => 1,
 				'Classification' => "Copyright",
@@ -196,5 +190,12 @@ for my $notice (@notices) {
 		)->store(text => $rttext);
 		$ticket->comment(message => "original complaint", attachments => [$attachment]);
 		print "New ticket's id is ", $ticket->id, "\n" if($debug > 0);
+
+		if($sclosed && ($constit eq "ResNet" || $constit eq "Academic Support")) {
+			print "Closing ticket ",$ticket->id, "\n" if($debug > 0);
+			$ticket->cf('Resolution' => 'successfully resolved');
+			$ticket->status("resolved");
+			$ticket->store;
+		}
 	}
 }
