@@ -35,7 +35,8 @@ my @noisysubjects = (
 	"Shadowserver University of Waterloo QOTD Report",
 	"Shadowserver University of Waterloo NTP Report",
 	"Shadowserver University of Waterloo NTP Version Report",
-	"Shadowserver University of Waterloo NTP Monitor Report"
+	"Shadowserver University of Waterloo NTP Monitor Report",
+	"Shadowserver University of Waterloo SSLv3/Poodle Vulnerable Servers Report"
 );
 
 if($opt_h) {
