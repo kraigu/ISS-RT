@@ -1,13 +1,11 @@
 #!/usr/bin/env perl
 
-# IST-ISS Co-op Cheng Jie Shi <cjshi@uwaterloo.ca> Feb 2013
-# Modify exsiting script from Mike Patterson
- 
 # Report on Incidents for a given time frame.
 # Ignores Question Only incidents and any incident
 # with an abandoned state or resolution (wtf RT?)
 # Mike Patterson <mike.patterson@uwaterloo.ca>
-# in his guise as IST-ISS staff member, Feb, Jul 2012
+# in his guise as IST-ISS staff member, Feb, Jul 2012 (and ongoing)
+# also IST-ISS Co-op Cheng Jie Shi <cjshi@uwaterloo.ca> Feb 2013
 
 use strict;
 use warnings;
@@ -58,6 +56,7 @@ AND Created > '$lm'
 AND Created < '$nm'
 AND CF.{Classification} != 'Question Only'
 AND CF.{Resolution} != 'abandoned'
+AND CF.{Resolution} != 'false positive'
 AND Status != 'rejected'
 |;
 
