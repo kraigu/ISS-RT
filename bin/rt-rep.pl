@@ -56,6 +56,7 @@ AND Created > '$lm'
 AND Created < '$nm'
 AND CF.{Classification} != 'Question Only'
 AND CF.{Resolution} != 'abandoned'
+AND Status != 'abandoned'
 AND CF.{Resolution} != 'false positive'
 AND Status != 'rejected'
 |;
